@@ -36,6 +36,52 @@ AeroFlow is built on the **Deterministic Actor Scheduler (DAS)**. Unlike traditi
 
 ---
 
+## 🏗️ High-Level Architecture
+
+AeroFlow operates as a **Deterministic Virtual Machine (DVM)**. It abstracts the underlying OS nondeterminism into a strictly causal execution flow.
+
+```mermaid
+graph TD
+    A[Source .aefl] --> B[Compiler]
+    B --> C{AeroFlow IR}
+    C --> D[DAS Scheduler]
+    D --> E[Isolated Actor Arena]
+    E --> F[Deterministic VM]
+    F --> G[Trace Recorder]
+    G --> H[trace.json]
+    
+    subgraph "The Elite Core"
+    D
+    E
+    F
+    end
+```
+
+### The Three Pillars
+
+1. **Frontend (Compiler)**: High-speed recursive descent parser generating deterministic IR chunks.
+2. **Middleware (DAS)**: A total-ordered priority queue using a global logical clock.
+3. **Backend (Runtime)**: Zero-GC isolated memory arenas per actor to prevent latency jitter.
+
+---
+
+## 📂 Repository Structure
+
+```text
+.
+├── cli/                 # Unified toolchain (aeroflow-cli)
+├── compiler/            # Tier-0 AeroFlow-to-IR compiler
+├── runtime/             # The DAS-powered execution engine
+├── aeroflow-lsp/        # VS Code Language Server Protocol support
+├── aeroflow-conformance/# Language conformance test suite
+├── docs/                # EBNF Grammar, Spec, and CLI Reference
+├── stdlib/              # Standard Library (HTTP, AI, Crypto)
+├── examples/            # Reference AeroFlow implementations
+└── README.md            # The AeroFlow Manifesto
+```
+
+---
+
 ## 📊 Benchmark Comparison (v1.0 Stage)
 
 AeroFlow is engineered for **Predictability** and **Latency Stability**, filling the gaps left by traditional runtimes.
