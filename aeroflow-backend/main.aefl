@@ -1,0 +1,10 @@
+from http core
+from db kv
+
+spawn Database
+spawn AuthService
+spawn UserService
+spawn SupportAgent
+
+render "🌀 AeroFlow Backend Booted"
+render "🚀 Listening on :8080"

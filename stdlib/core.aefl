@@ -1,0 +1,6 @@
+// AeroFlow Standard Library - Core
+// Zero-cost, high-performance base functions
+
+fn print(msg) {
+    // Built-in print logic
+}

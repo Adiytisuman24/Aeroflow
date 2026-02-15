@@ -1,0 +1,45 @@
+{
+  "$schema": "https://raw.githubusercontent.com/martinring/tmlanguage/master/tmlanguage.json",
+  "name": "AeroFlow",
+  "scopeName": "source.aeroflow",
+  "patterns": [
+    {
+      "include": "#keywords"
+    },
+    {
+      "include": "#strings"
+    },
+    {
+      "include": "#numbers"
+    }
+  ],
+  "repository": {
+    "keywords": {
+      "patterns": [
+        {
+          "name": "keyword.control.aeroflow",
+          "match": "\\b(fn|actor|on|state|emit|send|recv|spawn|effect|return|if|else|loop|while|for|match|import)\\b"
+        },
+        {
+          "name": "storage.type.aeroflow",
+          "match": "\\b(Int|Float|Bool|String|List|Map|ActorRef|Bytes)\\b"
+        }
+      ]
+    },
+    "strings": {
+      "name": "string.quoted.double.aeroflow",
+      "begin": "\"",
+      "end": "\"",
+      "patterns": [
+        {
+          "name": "constant.character.escape.aeroflow",
+          "match": "\\\\."
+        }
+      ]
+    },
+    "numbers": {
+      "name": "constant.numeric.aeroflow",
+      "match": "\\b\\d+(\\.\\d+)?\\b"
+    }
+  }
+}

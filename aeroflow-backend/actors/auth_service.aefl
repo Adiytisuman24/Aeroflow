@@ -1,0 +1,14 @@
+from crypto jwt
+
+actor AuthService {
+    state secret = env("JWT_SECRET")
+
+    on issue(user_id) {
+        token = jwt.sign({ id: user_id }, secret)
+        return token
+    }
+
+    on verify(token) {
+        return jwt.verify(token, secret)
+    }
+}

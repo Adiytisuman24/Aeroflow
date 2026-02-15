@@ -1,0 +1,92 @@
+# AeroFlow v1.0 Formal Grammar (EBNF)
+
+program      = { declaration } ;
+
+declaration  = import_decl
+             | actor_decl
+             | agent_decl
+             | model_decl
+             | function_decl
+             | statement ;
+
+import_decl  = "from" , identifier , identifier ;
+
+let_stmt     = "let" , identifier , [ ":" , type ] , "=" , expression ;
+
+assign_stmt  = identifier , "=" , expression ;
+
+if_stmt      = "if" , expression , block , { "else" , "if" , expression , block } , [ "else" , block ] ;
+
+while_stmt   = "while" , expression , block ;
+
+for_stmt     = "for" , identifier , "in" , expression , ".." , expression , block ;
+
+spawn_stmt   = "spawn" , expression ;
+
+render_stmt  = "render" , expression ;
+
+return_stmt  = "return" , [ expression ] ;
+
+expr_stmt    = expression ;
+
+statement    = let_stmt
+             | assign_stmt
+             | if_stmt
+             | while_stmt
+             | for_stmt
+             | spawn_stmt
+             | render_stmt
+             | return_stmt
+             | expr_stmt ;
+
+type         = "int" | "float" | "string" | "bool" | "list" , "[" , type , "]" | identifier ;
+
+expression   = binary_expr ;
+
+binary_expr  = unary_expr , { operator , unary_expr } ;
+
+unary_expr   = [ "-" | "!" ] , primary ;
+
+primary      = number
+             | string
+             | boolean
+             | identifier
+             | call_expr
+             | "(" , expression , ")"
+             | tensor_expr
+             | env_expr
+             | time_expr ;
+
+call_expr    = identifier , "(" , [ expression , { "," , expression } ] , ")" ;
+
+env_expr     = "env" , "(" , string , ")" ;
+
+time_expr    = "time" ;
+
+tensor_expr  = "tensor" , "[" , int , "," , int , "]" , "{" , { number , "," } , "}" ;
+
+block        = "{" , { statement } , "}" ;
+
+function_decl = [ "pure" ] , "fn" , identifier , "(" , [ parameters ] , ")" , [ "->" , type ] , block ;
+
+actor_decl    = "actor" , identifier , "{" , { actor_member } , "}" ;
+
+actor_member  = state_decl | handler_decl ;
+
+state_decl    = "state" , identifier , "=" , expression ;
+
+handler_decl  = "on" , identifier , "(" , [ parameters ] , ")" , [ "->" , type ] , block ;
+
+agent_decl    = "agent" , identifier , "{" , model_bind , { handler_decl } , "}" ;
+
+model_bind    = "model" , identifier ;
+
+model_decl    = "model" , identifier , "{" , "input" , identifier , "output" , identifier , "}" ;
+
+operator     = "+" | "-" | "*" | "/" | "==" | "!=" | "<" | ">" | "<=" | ">=" ;
+
+identifier   = letter , { letter | digit | "_" } ;
+number       = digit , { digit } , [ "." , digit , { digit } ] ;
+string       = "\"" , { character } , "\"" ;
+letter       = "a"..."z" | "A"..."Z" ;
+digit        = "0"..."9" ;

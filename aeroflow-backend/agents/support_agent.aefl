@@ -1,0 +1,10 @@
+from ai openai
+
+agent SupportAgent {
+    model gpt4
+
+    on message(text) {
+        resp = model.ask(text)
+        render resp
+    }
+}

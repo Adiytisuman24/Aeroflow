@@ -1,0 +1,12 @@
+from http core
+
+http.post "/users" {
+    token = UserService.create(body)
+    render { token: token }
+}
+
+http.get "/users/:id" {
+    auth = AuthService.verify(headers.auth)
+    user = UserService.get(id)
+    render user
+}

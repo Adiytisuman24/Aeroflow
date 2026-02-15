@@ -1,0 +1,10 @@
+// AeroFlow Standard Library - HTTP
+// High-performance AI-native HTTP server
+
+fn get(path, handler) {
+    # Internal server logic
+}
+
+fn post(path, handler) {
+    # Internal server logic
+}

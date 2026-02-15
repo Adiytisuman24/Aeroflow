@@ -1,0 +1,50 @@
+{
+  "name": "aeroflow",
+  "displayName": "AeroFlow",
+  "description": "Deterministic Backend + App + AI Language",
+  "version": "1.0.0",
+  "publisher": "aeroflow-dev",
+  "engines": {
+    "vscode": "^1.74.0"
+  },
+  "categories": [
+    "Programming Languages"
+  ],
+  "activationEvents": [
+    "onLanguage:aeroflow"
+  ],
+  "main": "./src/extension.ts",
+  "contributes": {
+    "languages": [
+      {
+        "id": "aeroflow",
+        "aliases": [
+          "AeroFlow",
+          "af"
+        ],
+        "extensions": [
+          ".af",
+          ".aefl"
+        ],
+        "configuration": "./language-configuration.json"
+      }
+    ],
+    "grammars": [
+      {
+        "language": "aeroflow",
+        "scopeName": "source.aeroflow",
+        "path": "./syntaxes/aeroflow.tmLanguage.json"
+      }
+    ],
+    "commands": [
+      {
+        "command": "aeroflow.run",
+        "title": "AeroFlow: Run"
+      },
+      {
+        "command": "aeroflow.build",
+        "title": "AeroFlow: Build"
+      }
+    ]
+  }
+}

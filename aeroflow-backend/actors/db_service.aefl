@@ -1,0 +1,11 @@
+actor Database {
+    state users = {}
+
+    on insert(user) {
+        users[user.id] = user
+    }
+
+    on get(id) {
+        render users[id]
+    }
+}

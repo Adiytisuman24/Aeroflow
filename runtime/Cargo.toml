@@ -1,6 +1,20 @@
 [package]
-name = "runtime"
+name = "aeroflow-runtime"
 version = "0.1.0"
 edition = "2021"
 
 [dependencies]
+aeroflow-compiler = { workspace = true }
+crossbeam = { workspace = true }
+parking_lot = { workspace = true }
+tokio = { workspace = true }
+ndarray = { workspace = true }
+rayon = { workspace = true }
+memmap2 = { workspace = true }
+bytemuck = { workspace = true }
+bumpalo = { workspace = true }
+hashbrown = { workspace = true }
+bitflags = "2.6"
+serde = { workspace = true }
+serde_json = { workspace = true }
+# GC, Zero deps

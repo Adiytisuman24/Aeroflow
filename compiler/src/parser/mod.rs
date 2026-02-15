@@ -1,0 +1,291 @@
+// AeroFlow Compiler - Parser (v1.0 Locked Spec)
+// Recursive descent, single-pass
+
+use crate::lexer::{Lexer, TokenKind};
+use crate::ast::{Expr, Stmt};
+use smallvec::SmallVec;
+
+pub struct Parser<'a> {
+    lexer: Lexer<'a>,
+    current: TokenKind,
+    previous: TokenKind,
+}
+
+impl<'a> Parser<'a> {
+    pub fn new(lexer: Lexer<'a>) -> Self {
+        let mut p = Self {
+            lexer,
+            current: TokenKind::EOF,
+            previous: TokenKind::EOF,
+        };
+        p.advance();
+        p
+    }
+
+    fn advance(&mut self) {
+        self.previous = self.current.clone();
+        self.current = self.lexer.next_token();
+    }
+
+    fn match_token(&mut self, kind: TokenKind) -> bool {
+        if std::mem::discriminant(&self.current) == std::mem::discriminant(&kind) {
+            self.advance();
+            return true;
+        }
+        false
+    }
+
+    fn consume(&mut self, kind: TokenKind, message: &str) {
+        if !self.match_token(kind) {
+            panic!("{}", message);
+        }
+    }
+
+    pub fn parse(&mut self) -> Vec<Stmt> {
+        let mut statements = Vec::new();
+        while self.current != TokenKind::EOF {
+            statements.push(self.parse_statement());
+        }
+        statements
+    }
+
+    fn parse_statement(&mut self) -> Stmt {
+        if self.match_token(TokenKind::Let) { self.parse_let() }
+        else if self.match_token(TokenKind::Fn) { self.parse_fn(false) }
+        else if self.match_token(TokenKind::Pure) { 
+            self.consume(TokenKind::Fn, "Expect 'fn' after 'pure'");
+            self.parse_fn(true) 
+        }
+        else if self.match_token(TokenKind::Actor) { self.parse_actor() }
+        else if self.match_token(TokenKind::Agent) { self.parse_agent() }
+        else if self.match_token(TokenKind::Model) { self.parse_model() }
+        else if self.match_token(TokenKind::From) { self.parse_from() }
+        else if self.match_token(TokenKind::Render) { self.parse_render() }
+        else if self.match_token(TokenKind::Spawn) { self.parse_spawn() }
+        else if self.match_token(TokenKind::If) { self.parse_if() }
+        else if self.match_token(TokenKind::While) { self.parse_while() }
+        else if self.match_token(TokenKind::Return) { 
+            let expr = self.parse_expression();
+            Stmt::Return(expr)
+        }
+        else { Stmt::Expr(self.parse_expression()) }
+    }
+
+    fn parse_if(&mut self) -> Stmt {
+        let condition = self.parse_expression();
+        self.consume(TokenKind::LBrace, "Expect '{' after if condition");
+        let mut then_branch = Vec::new();
+        while self.current != TokenKind::RBrace && self.current != TokenKind::EOF {
+            then_branch.push(self.parse_statement());
+        }
+        self.consume(TokenKind::RBrace, "Expect '}' after then branch");
+        
+        let else_branch = if self.match_token(TokenKind::Else) {
+            if self.match_token(TokenKind::If) {
+                Some(vec![self.parse_if()])
+            } else {
+                self.consume(TokenKind::LBrace, "Expect '{' after else");
+                let mut branch = Vec::new();
+                while self.current != TokenKind::RBrace && self.current != TokenKind::EOF {
+                    branch.push(self.parse_statement());
+                }
+                self.consume(TokenKind::RBrace, "Expect '}' after else branch");
+                Some(branch)
+            }
+        } else {
+            None
+        };
+        
+        Stmt::If { condition, then_branch, else_branch }
+    }
+
+    fn parse_while(&mut self) -> Stmt {
+        let condition = self.parse_expression();
+        self.consume(TokenKind::LBrace, "Expect '{' after while condition");
+        let mut body = Vec::new();
+        while self.current != TokenKind::RBrace && self.current != TokenKind::EOF {
+            body.push(self.parse_statement());
+        }
+        self.consume(TokenKind::RBrace, "Expect '}' after while body");
+        Stmt::While { condition, body }
+    }
+
+    fn parse_let(&mut self) -> Stmt {
+        self.consume(TokenKind::Ident(String::new()), "Expect variable name after let");
+        let name = if let TokenKind::Ident(n) = &self.previous { n.clone() } else { panic!() };
+        
+        if self.match_token(TokenKind::Colon) {
+            self.advance(); // Skip type
+            if self.match_token(TokenKind::LAngle) {
+                while !self.match_token(TokenKind::RAngle) { self.advance(); }
+            }
+            if self.match_token(TokenKind::LBracket) {
+                while !self.match_token(TokenKind::RBracket) { self.advance(); }
+            }
+        }
+
+        let value = if self.match_token(TokenKind::Equal) {
+            self.parse_expression()
+        } else {
+            Expr::Number(0.0)
+        };
+        Stmt::VarDecl { name, value }
+    }
+
+    fn parse_fn(&mut self, is_pure: bool) -> Stmt {
+        self.consume(TokenKind::Ident(String::new()), "Expect function name");
+        let name = if let TokenKind::Ident(n) = &self.previous { n.clone() } else { panic!() };
+        
+        self.consume(TokenKind::LParen, "Expect '(' after function name");
+        let mut params = Vec::new();
+        if self.current != TokenKind::RParen {
+            loop {
+                self.consume(TokenKind::Ident(String::new()), "Expect param name");
+                if let TokenKind::Ident(p) = &self.previous { params.push(p.clone()); }
+                if !self.match_token(TokenKind::Comma) { break; }
+            }
+        }
+        self.consume(TokenKind::RParen, "Expect ')' after params");
+        
+        self.consume(TokenKind::LBrace, "Expect '{' before function body");
+        let mut body = Vec::new();
+        while self.current != TokenKind::RBrace && self.current != TokenKind::EOF {
+            body.push(self.parse_statement());
+        }
+        self.consume(TokenKind::RBrace, "Expect '}' after function body");
+        
+        Stmt::Fn { name, params, body, is_pure }
+    }
+
+    fn parse_from(&mut self) -> Stmt {
+        self.consume(TokenKind::Ident(String::new()), "Expect package name after 'from'");
+        let package = if let TokenKind::Ident(p) = &self.previous { p.clone() } else { panic!() };
+        
+        self.consume(TokenKind::Ident(String::new()), "Expect layer name after package");
+        let layer = if let TokenKind::Ident(l) = &self.previous { l.clone() } else { panic!() };
+        
+        Stmt::FromImport { package, layer }
+    }
+
+    fn parse_render(&mut self) -> Stmt {
+        let expr = self.parse_expression();
+        Stmt::Render(expr)
+    }
+
+    fn parse_spawn(&mut self) -> Stmt {
+        let expr = self.parse_expression();
+        Stmt::Spawn(expr)
+    }
+
+    fn parse_actor(&mut self) -> Stmt {
+        self.consume(TokenKind::Ident(String::new()), "Expect actor name");
+        let name = if let TokenKind::Ident(n) = &self.previous { n.clone() } else { panic!() };
+        self.consume(TokenKind::LBrace, "Expect '{'");
+        let mut body = Vec::new();
+        while self.current != TokenKind::RBrace {
+            body.push(self.parse_statement());
+        }
+        self.consume(TokenKind::RBrace, "Expect '}'");
+        Stmt::Actor { name, body }
+    }
+
+    fn parse_agent(&mut self) -> Stmt {
+        self.consume(TokenKind::Ident(String::new()), "Expect agent name");
+        let name = if let TokenKind::Ident(n) = &self.previous { n.clone() } else { panic!() };
+        self.consume(TokenKind::LBrace, "Expect '{'");
+        let mut body = Vec::new();
+        while self.current != TokenKind::RBrace {
+            body.push(self.parse_statement());
+        }
+        self.consume(TokenKind::RBrace, "Expect '}'");
+        Stmt::Agent { name, model: String::new(), body }
+    }
+
+    fn parse_model(&mut self) -> Stmt {
+        self.consume(TokenKind::Ident(String::new()), "Expect model name");
+        let name = if let TokenKind::Ident(n) = &self.previous { n.clone() } else { panic!() };
+        self.consume(TokenKind::LBrace, "Expect '{'");
+        self.consume(TokenKind::RBrace, "Expect '}'");
+        Stmt::Model { name, source: String::new(), body: Vec::new() }
+    }
+
+    fn parse_expression(&mut self) -> Expr {
+        self.parse_binary(0)
+    }
+
+    fn parse_binary(&mut self, min_precedence: u8) -> Expr {
+        let mut left = self.parse_primary();
+
+        while let Some(precedence) = self.get_precedence(&self.current) {
+            if precedence < min_precedence {
+                break;
+            }
+
+            let op = self.current.clone();
+            self.advance();
+            let right = self.parse_binary(precedence + 1);
+            left = Expr::Binary {
+                left: Box::new(left),
+                op,
+                right: Box::new(right),
+            };
+        }
+
+        left
+    }
+
+    fn get_precedence(&self, token: &TokenKind) -> Option<u8> {
+        match token {
+            TokenKind::EqualEqual | TokenKind::BangEqual => Some(5),
+            TokenKind::LAngle | TokenKind::RAngle | TokenKind::LessEqual | TokenKind::GreaterEqual => Some(10),
+            TokenKind::Plus | TokenKind::Minus => Some(20),
+            TokenKind::Star | TokenKind::Slash => Some(30),
+            _ => None,
+        }
+    }
+
+    fn parse_primary(&mut self) -> Expr {
+        if self.match_token(TokenKind::Number(0.0)) {
+            if let TokenKind::Number(n) = self.previous { return Expr::Number(n); }
+        }
+        if self.match_token(TokenKind::String(String::new())) {
+            if let TokenKind::String(s) = &self.previous { return Expr::String(s.clone()); }
+        }
+        if self.match_token(TokenKind::Ident(String::new())) {
+            let name = if let TokenKind::Ident(n) = &self.previous { n.clone() } else { panic!() };
+            if self.match_token(TokenKind::LParen) {
+                let mut args = SmallVec::new();
+                if self.current != TokenKind::RParen {
+                    loop {
+                        args.push(Box::new(self.parse_expression()));
+                        if !self.match_token(TokenKind::Comma) { break; }
+                    }
+                }
+                self.consume(TokenKind::RParen, "Expect ')' after args");
+                return Expr::Call { name, args };
+            }
+            return Expr::Ident(name);
+        }
+        if self.match_token(TokenKind::LParen) {
+            let expr = self.parse_expression();
+            self.consume(TokenKind::RParen, "Expect ')' after expression");
+            return expr;
+        }
+        if self.match_token(TokenKind::Env) {
+            self.consume(TokenKind::LParen, "Expect '(' after 'env'");
+            self.consume(TokenKind::String(String::new()), "Expect string after 'env('");
+            let key = if let TokenKind::String(s) = &self.previous { s.clone() } else { panic!() };
+            self.consume(TokenKind::RParen, "Expect ')' after env key");
+            return Expr::Env(key);
+        }
+        if self.match_token(TokenKind::Time) {
+            return Expr::Time;
+        }
+        if self.match_token(TokenKind::Rand) {
+            self.consume(TokenKind::LParen, "Expect '(' after 'rand'");
+            self.consume(TokenKind::RParen, "Expect ')' after 'rand('");
+            return Expr::Rand;
+        }
+        panic!("Unexpected token in primary: {:?} (slice: {})", self.current, self.lexer.slice());
+    }
+}

@@ -1,0 +1,8 @@
+[package]
+name = "demoapp"
+version = "0.1.0"
+entry = "main.aefl"
+
+[dependencies]
+http = "1.2"
+ai.vision = "0.3"

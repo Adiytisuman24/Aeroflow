@@ -1,0 +1,15 @@
+[package]
+name = "aeroflow-backend"
+version = "0.1.0"
+entry = "main.aefl"
+
+[modules]
+http = "*"
+crypto.jwt = "*"
+db.kv = "*"
+ai.openai = "*"
+
+[runtime]
+mode = "auto"
+memory = "512MB"
+actors = "unlimited"

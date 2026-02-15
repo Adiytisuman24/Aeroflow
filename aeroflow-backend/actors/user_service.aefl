@@ -1,0 +1,11 @@
+actor UserService {
+    on create(user) {
+        Database.insert(user)
+        token = AuthService.issue(user.id)
+        return token
+    }
+
+    on get(id) {
+        return Database.get(id)
+    }
+}

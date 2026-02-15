@@ -1,0 +1,10 @@
+// AeroFlow Standard Library - AI
+// Tensor acceleration and model loading
+
+fn load(path) {
+    # loads .afm model
+}
+
+fn infer(model, tensor) {
+    # native inference
+}

@@ -1,11 +1,11 @@
 {
-  "name": "aeroflow",
-  "displayName": "AeroFlow",
-  "description": "Deterministic Backend + App + AI Language",
-  "version": "1.0.0",
-  "publisher": "aeroflow-dev",
+  "name": "vscode-aeroflow",
+  "displayName": "AeroFlow Language Support",
+  "description": "AI-native language support for AeroFlow",
+  "version": "0.1.0",
+  "publisher": "aeroflow",
   "engines": {
-    "vscode": "^1.74.0"
+    "vscode": "^1.75.0"
   },
   "categories": [
     "Programming Languages"
@@ -13,38 +13,18 @@
   "activationEvents": [
     "onLanguage:aeroflow"
   ],
-  "main": "./src/extension.ts",
+  "main": "./dist/extension.js",
   "contributes": {
-    "languages": [
-      {
-        "id": "aeroflow",
-        "aliases": [
-          "AeroFlow",
-          "af"
-        ],
-        "extensions": [
-          ".af",
-          ".aefl"
-        ],
-        "configuration": "./language-configuration.json"
-      }
-    ],
-    "grammars": [
-      {
-        "language": "aeroflow",
-        "scopeName": "source.aeroflow",
-        "path": "./syntaxes/aeroflow.tmLanguage.json"
-      }
-    ],
-    "commands": [
-      {
-        "command": "aeroflow.run",
-        "title": "AeroFlow: Run"
-      },
-      {
-        "command": "aeroflow.build",
-        "title": "AeroFlow: Build"
-      }
-    ]
+    "languages": [{
+      "id": "aeroflow",
+      "aliases": ["AeroFlow", "aeroflow"],
+      "extensions": [".aefl", ".aero"],
+      "configuration": "./language-configuration.json"
+    }],
+    "grammars": [{
+      "language": "aeroflow",
+      "scopeName": "source.aeroflow",
+      "path": "./syntaxes/aeroflow.tmLanguage.json"
+    }]
   }
 }
