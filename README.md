@@ -20,6 +20,22 @@ Modern distributed systems are fragile, non-deterministic, and slow to scale. **
 
 ---
 
+## 🏗️ Core Architecture: The Elite Engine
+
+AeroFlow is built on the **Deterministic Actor Scheduler (DAS)**. Unlike traditional runtimes that rely on OS threads (nondeterministic), AeroFlow uses a global logical clock.
+
+### 🧩 Components
+
+| Module | Description | Status |
+| :--- | :--- | :--- |
+| **`compiler/`** | Tier-0 high-speed AeroFlow-to-IR compiler. | ✅ Stable |
+| **`runtime/`** | The DAS-powered execution engine with Arena memory. | ✅ Stable |
+| **`cli/`** | Unified toolchain for building, running, and testing. | ✅ Stable |
+| **`aeroflow-lsp/`** | Language Server Protocol for IDE integration. | 🏗️ In Progress |
+| **`aeroflow-conformance/`** | Official AeroFlow Conformance Test Suite (AFCTS). | ✅ Active |
+
+---
+
 ## 🏗️ High-Level Architecture
 
 AeroFlow operates as a **Deterministic Virtual Machine (DVM)**. It abstracts the underlying OS nondeterminism into a strictly causal execution flow.
@@ -60,9 +76,30 @@ graph TD
 
 ---
 
+## 🎨 AeroFlow Studio (IDE)
+
+`aeroflow install ide`
+
+The official development environment is designed for the **AeroFlow Elite Engine**, featuring:
+
+- **Deterministic Trace Viewer**: Visualize actor messages on a timeline.
+- **Time-Travel Debugger**: Step backward and forward through execution history.
+- **Snapshot Inspector**: View the frozen memory state of any actor.
+- **Elite Dark Mode**: High-contrast, neon-highlighted syntax optimized for focus.
+
+---
+
 ## 📊 Comparative Benchmarks (P99 Stability)
 
 AeroFlow is optimized for **tail latency** and **predictable throughput** rather than just peak micro-benchmark scores.
+
+### 🛡️ Runtime Mechanics Comparison
+| Metric | **🌀 AeroFlow** | **🐹 Go** | **🟢 Node.js** | **🐍 Python** |
+| :--- | :--- | :--- | :--- | :--- |
+| **Cold Start** | **~500µs – 3ms** | ~15ms – 30ms | ~60ms – 150ms | ~40ms – 100ms |
+| **Execution** | **Deterministic (DAS)** | Nondeterministic | Nondeterministic | Nondeterministic |
+| **Memory Model** | **Local Arena** (Zero-GC) | Global GC (STW) | Global GC | Ref Counting |
+| **Concurrency** | Causal Actor Link | Goroutines | Event Loop | GIL Restricted |
 
 ### 🧮 Computational & IO Performance
 | Metric | **🌀 AeroFlow** | **🐹 Go** | **🟢 Node.js** | **🐍 Python** |
@@ -70,31 +107,35 @@ AeroFlow is optimized for **tail latency** and **predictable throughput** rather
 | **Fibonacci (40)** | ~480ms | **~320ms** | ~450ms | ~28,000ms |
 | **JSON Parse (10MB)** | **~12ms** | ~18ms | ~25ms | ~80ms |
 | **HTTP Req/Sec** | ~140k | **~185k** | ~110k | ~12k |
-| **Cold Start** | **<1ms** | ~15ms | ~80ms | ~50ms |
-
-### 🛡️ Why AeroFlow Wins on JSON & Startups
-AeroFlow's `JSON Parse` speed is superior because it leverages **Native Rust SIMD** under the hood via the DAS runtime, whereas Node.js and Python suffer from cross-bridge overhead. 
 
 ---
 
 ## 🔬 Deep Dive: The Elite Engine Theory
 
 ### 1. Compiler Optimizations (Depth over Breadth)
+
 The AeroFlow compiler doesn't just pass through code; it performs **Semantic Constant Folding** and **Causal Dead-Code Elimination (CDCE)**.
+
 - **LLVM MIR Lifting**: AeroFlow IR is designed to be "liftable" into Rust's Middle-Level IR (MIR). This allows the engine to benefit from LLVM's polyhedral loop optimizations and vectorization when transpiling to native targets.
 - **Deterministic IR**: Every instruction is verified to have zero side-effects outside its assigned actor arena.
 
 ### 2. Distributed DAS (D-DAS)
+
 In a distributed context, AeroFlow uses **Vector Clocks** combined with the deterministic scheduler to ensure that horizontal scaling does not introduce race conditions.
+
 - **Network Invariance**: If a message $M$ is sent from Actor A to Actor B, the logical timestamp is locked. Even if the network delays the packet, the DAS scheduler ensures $M$ is processed at the exact same logical "tick" on every node.
 
 ### 3. Language Design Theory: Capability Sandboxing
+
 AeroFlow enforces a **Strict Capability Model**.
+
 - **No Global Scope**: Actors cannot access disk, network, or time unless the capability is explicitly granted via `from core import <layer>`.
 - **Causal Consistency**: The language syntax prevents shared-state patterns, forcing developers into "Share by Communicating" (CSP) which eliminates 99% of concurrency bugs.
 
 ### 4. Runtime Scheduling & LLVM IR Transformations
+
 The AeroFlow Runtime is more than a VM; it's an **LLVM-Compatible Hybrid**.
+
 - **JIT vs AOT**: Small scripts run in the **Deterministic VM** for instant starts. Large, hot loops are transformed into **LLVM bitcode** in the background, optimized for the specific CPU (AVX-512, NEON), and swapped back in without stopping the world.
 - **Arena Memory**: Memory is allocated in contiguous blocks per actor. This cache-locality-aware design reduces L3 cache misses by 40% compared to Node.js's heap-fragmented model.
 
@@ -102,14 +143,40 @@ The AeroFlow Runtime is more than a VM; it's an **LLVM-Compatible Hybrid**.
 
 ## 🛠️ Installation & Usage
 
+### Build the Elite Toolchain
 ```bash
-# Build the Elite toolchain
+# Build the core compiler and runtime
 cargo build --release --bin aeroflow-cli
+```
 
-# Run a deterministic script
+### Basic Commands
+```bash
+# Initialize a new project
+aeroflow-cli init my_app
+
+# Run conformance tests
+aeroflow-cli test
+
+# Start the deterministic runtime
 # (Automatic Trace generation enabled)
 aeroflow-cli run examples/hello.aefl
 ```
+
+### Time-Travel Debugging
+```bash
+# View the execution timeline and state snapshots
+aeroflow-cli trace
+```
+
+---
+
+## 🤝 Contributing
+
+We are building the future of deterministic computing. If you're interested in compilers, high-performance runtimes, or AI-native systems, we'd love your help.
+
+1. Fork the repo
+2. Ensure tests pass: `cargo test` & `aeroflow-cli test`
+3. Submit a PR
 
 ---
 
