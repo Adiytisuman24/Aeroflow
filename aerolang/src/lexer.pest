@@ -1,0 +1,64 @@
+WHITESPACE = _{ " " | "\t" | "\n" | "\r" }
+
+program = { SOI ~ statement* ~ EOI }
+
+statement =
+  _{ function
+   | variable
+   | assignment
+   | return_stmt
+   | if_stmt
+   | expr_stmt }
+
+variable = { identifier ~ ":"? ~ type? ~ "=" ~ expression }
+assignment = { identifier ~ "=" ~ expression }
+
+function = {
+  "fn" ~ identifier ~ "(" ~ params? ~ ")" ~ return_type? ~ block
+}
+
+params = { param ~ ("," ~ param)* }
+param = { identifier ~ ":"? ~ type? }
+
+return_type = { "->" ~ type }
+
+block = { "{" ~ statement* ~ "}" }
+
+if_stmt = {
+  "if" ~ expression ~ block
+  ~ ("elif" ~ expression ~ block)*
+  ~ ("else" ~ block)?
+}
+
+return_stmt = { "return" ~ expression? }
+
+expr_stmt = { expression }
+
+expression = { logical }
+logical = { comparison ~ (logical_op ~ comparison)* }
+logical_op = { "and" | "or" }
+
+comparison = { term ~ (comp_op ~ term)* }
+comp_op = { "==" | "!=" | ">" | "<" | ">=" | "<=" }
+
+term = { factor ~ (add_op ~ factor)* }
+add_op = { "+" | "-" }
+
+factor = { unary ~ (mul_op ~ unary)* }
+mul_op = { "*" | "/" | "%" | "**" }
+
+unary = { unary_op* ~ primary }
+unary_op = { "not" | "-" }
+
+primary =
+  { call | number | string | boolean | identifier | "(" ~ expression ~ ")" }
+
+call = { identifier ~ "(" ~ arg_list? ~ ")" }
+arg_list = { expression ~ ("," ~ expression)* }
+
+type = { "Int" | "Float" | "Bool" | "String" | "List" | "Map" | "Set" }
+
+identifier = @{ ASCII_ALPHA ~ (ASCII_ALPHANUMERIC | "_")* }
+number = @{ ASCII_DIGIT+ ~ ("." ~ ASCII_DIGIT+)? }
+string = @{ "\"" ~ (!"\"" ~ ANY)* ~ "\"" }
+boolean = { "true" | "false" }

@@ -1,0 +1,21 @@
+app AeroFlowDemo {
+  theme dark
+  entry HomeScreen
+}
+
+screen HomeScreen {
+  state count: Int = 0
+
+  layout Column(center) {
+    Text("AeroFlow Counter")
+      .font(24)
+      .bold()
+
+    Text(count)
+      .font(20)
+
+    Button("Increment") {
+      count += 1
+    }
+  }
+}

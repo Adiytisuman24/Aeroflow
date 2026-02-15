@@ -1,0 +1,33 @@
+WHITESPACE = _{ " " | "\t" | "\r" | "\n" }
+COMMENT = _{ "//" ~ (!"\n" ~ ANY)* }
+
+ident = @{ ASCII_ALPHA ~ (ASCII_ALPHANUMERIC | "_")* }
+string = @{ "\"" ~ (!"\"" ~ ANY)* ~ "\"" }
+number = @{ ASCII_DIGIT+ }
+
+program = { (app_def | screen_def)* }
+
+app_def = { "app" ~ ident ~ "{" ~ (theme_def | entry_def)* ~ "}" }
+theme_def = { "theme" ~ ident }
+entry_def = { "entry" ~ ident }
+
+screen_def = { "screen" ~ ident ~ "{" ~ (state_def | layout_def)* ~ "}" }
+
+state_def = { "state" ~ ident ~ ":" ~ type_name ~ "=" ~ expr }
+type_name = { ident }
+
+layout_def = { "layout" ~ component_call ~ "{" ~ (child_def | event_handler)* ~ "}" }
+component_call = { ident ~ ("(" ~ arg_list? ~ ")")? }
+arg_list = { ident ~ ("," ~ ident)* }
+
+child_def = { component_call ~ (modifier)* ~ "{" ~ (child_def)* ~ "}" | component_call ~ (modifier)* }
+modifier = { "." ~ ident ~ "(" ~ (arg_list | string | number | expr)? ~ ")" }
+
+event_handler = { ident ~ "(" ~ string? ~ ")" ~ "{" ~ stmt* ~ "}" }
+
+stmt = { assignment | expr_stmt }
+assignment = { ident ~ "+=" ~ expr | ident ~ "=" ~ expr }
+expr_stmt = { expr }
+
+expr = { string | number | ident | call_expr }
+call_expr = { ident ~ "(" ~ arg_list? ~ ")" }

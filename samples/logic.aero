@@ -1,0 +1,12 @@
+# AeroLang Logic Demo
+x: Int = 10
+y = 20
+total = x + y
+
+fn calculate() {
+    print(total)
+}
+
+if total > 20 {
+    print("Large")
+}

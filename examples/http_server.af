@@ -1,0 +1,29 @@
+# AeroFlow HTTP Server Example
+
+import http
+
+server http.Server {
+    route "/" {
+        return http.Response(
+            status: 200,
+            body: "Welcome to AeroFlow!"
+        )
+    }
+
+    route "/api/users" {
+        users = [
+            { "id": 1, "name": "Alice" },
+            { "id": 2, "name": "Bob" }
+        ]
+        return http.json(users)
+    }
+
+    route "/api/echo" {
+        body = http.request.body
+        return http.json({ "echo": body })
+    }
+}
+
+# Start server
+server.listen(8080)
+print("Server running on http://localhost:8080")

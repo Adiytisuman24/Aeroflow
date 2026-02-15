@@ -1,0 +1,31 @@
+# AeroFlow AI Worker Example
+
+import ai.model
+
+# Load pre-trained model
+model = ai.load("models/sentiment.aefl")
+
+actor SentimentWorker {
+    state model = model
+
+    on Analyze(text) {
+        result = model.infer(text)
+        emit(result)
+    }
+}
+
+# Spawn worker
+worker = spawn(SentimentWorker)
+
+# Process samples
+samples = [
+    "I love AeroFlow!",
+    "This is frustrating.",
+    "Neutral statement."
+]
+
+for text in samples {
+    send(worker, Analyze(text))
+    sentiment = recv()
+    print(text, "=>", sentiment)
+}

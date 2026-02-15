@@ -1,0 +1,80 @@
+WHITESPACE = _{ " " | "\t" | "\r" | "\n" }
+COMMENT = _{ "#" ~ (!"\n" ~ ANY)* }
+
+ident = @{ ASCII_ALPHA ~ (ASCII_ALPHANUMERIC | "_")* }
+number = @{ ASCII_DIGIT+ ~ ("." ~ ASCII_DIGIT+)? }
+string = @{ "\"" ~ (!"\"" ~ ANY)* ~ "\"" }
+boolean = { "true" | "false" }
+
+program = { SOI ~ statement* ~ EOI }
+
+statement = {
+    var_decl
+    | assignment
+    | function_decl
+    | if_stmt
+    | for_stmt
+    | while_stmt
+    | return_stmt
+    | expr_stmt
+}
+
+var_decl = { ident ~ (":" ~ type_name)? ~ "=" ~ expression }
+
+assignment = { ident ~ "=" ~ expression }
+
+type_name = { "Int" | "Float" | "Bool" | "String" | "List" | "Map" | "Set" | ident }
+
+function_decl = { "fn" ~ ident ~ "(" ~ parameters? ~ ")" ~ ("->" ~ type_name)? ~ block }
+
+parameters = { param ~ ("," ~ param)* }
+param = { ident ~ (":" ~ type_name)? }
+
+block = { "{" ~ statement* ~ "}" }
+
+if_stmt = { "if" ~ expression ~ block ~ ("elif" ~ expression ~ block)* ~ ("else" ~ block)? }
+
+for_stmt = { "for" ~ ident ~ "in" ~ range_expr ~ block }
+range_expr = { expression ~ ".." ~ expression }
+
+while_stmt = { "while" ~ expression ~ block }
+
+return_stmt = { "return" ~ expression? }
+
+expr_stmt = { expression }
+
+expression = { logical_or }
+
+logical_or = { logical_and ~ (op_or ~ logical_and)* }
+op_or = { "or" }
+
+logical_and = { equality ~ (op_and ~ equality)* }
+op_and = { "and" }
+
+equality = { comparison ~ (op_eq ~ comparison)* }
+op_eq = { "==" | "!=" }
+
+comparison = { term ~ (op_rel ~ term)* }
+op_rel = { ">=" | "<=" | ">" | "<" }
+
+term = { factor ~ (op_add ~ factor)* }
+op_add = { "+" | "-" }
+
+factor = { unary ~ (op_mul ~ unary)* }
+op_mul = { "*" | "/" | "%" }
+
+unary = { (op_not | op_neg)? ~ primary }
+op_not = { "not" }
+op_neg = { "-" }
+
+primary = {
+    number
+    | string
+    | boolean
+    | call_expr
+    | ident
+    | "(" ~ expression ~ ")"
+}
+
+call_expr = { ident ~ "(" ~ arg_list? ~ ")" }
+arg_list = { expression ~ ("," ~ expression)* }

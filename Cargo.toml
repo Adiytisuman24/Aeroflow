@@ -1,0 +1,11 @@
+[workspace]
+members = [
+    "aerolang",
+    "shim",
+    "cli",
+    "aeroflow-lsp"
+]
+
+[workspace.dependencies]
+aerolang = { path = "./aerolang" }
+aeroflow-shim = { path = "./shim" }

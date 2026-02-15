@@ -1,0 +1,45 @@
+# Example AeroFlow Program
+
+fn greet(name) {
+    return "Hello, " + name + "!"
+}
+
+fn fibonacci(n) {
+    if n <= 1 {
+        return n
+    }
+    return fibonacci(n - 1) + fibonacci(n - 2)
+}
+
+# Main execution
+print(greet("AeroFlow"))
+
+# Calculate fibonacci
+result = fibonacci(10)
+print("Fibonacci(10) =", result)
+
+# Actor example
+actor Counter {
+    state count = 0
+
+    on Increment {
+        count = count + 1
+        emit(count)
+    }
+
+    on GetValue {
+        emit(count)
+    }
+}
+
+# Spawn counter actor
+counter = spawn(Counter)
+
+# Send messages
+send(counter, Increment)
+send(counter, Increment)
+send(counter, GetValue)
+
+# Receive result
+value = recv()
+print("Counter value:", value)

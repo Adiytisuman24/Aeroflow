@@ -1,0 +1,11 @@
+[package]
+name = "aeroflow-lsp"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+tokio = { version = "1.0", features = ["full"] }
+tower-lsp = "0.19"
+serde = "1.0"
+serde_json = "1.0"
+aerolang = { path = "../aerolang" }

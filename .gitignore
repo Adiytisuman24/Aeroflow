@@ -1,0 +1,32 @@
+# Build artifacts
+target/
+dist/
+build/
+*.exe
+*.dll
+*.so
+*.dylib
+
+# Cargo lock
+Cargo.lock
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
+*.txt
+
+# Test artifacts
+assets/nginx_latest/
+
+# Temporary files
+*.tmp
+*.temp
