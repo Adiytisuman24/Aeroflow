@@ -41,7 +41,8 @@ graph TD
     end
 ```
 
-### Integrated Architecture Tree
+### Integrated Architecture Overview
+
 ```text
 .aefl Program
  ├─> AOT Compiler
@@ -100,17 +101,6 @@ graph TD
 | **Async Inference** | Deterministic execution with message passing. |
 | **Agents** | `agent` keyword integrates models into DAS seamlessly. |
 
-#### Agent Example
-```ae
-agent Recommender {
-  model "llama3"
-
-  on predict(input) {
-    render model.run(input)  // deterministic per logical_time
-  }
-}
-```
-
 ### ⚡ 3. Zero Cold Start Serverless
 *   **AOT Compilation**: `.aefl` → native binary + runtime snapshot.
 *   **Freeze Memory State**: Scheduler + actors + mailboxes → `.afs` snapshot.
@@ -138,7 +128,77 @@ agent Recommender {
 
 ---
 
-## 🔬 Deep Dive: The Elite Engine Theory
+## � Example Program
+
+```ae
+from db postgres
+from ai openai
+
+actor Auth {
+  on login(user) {
+    render "Logged in: " + user.name
+  }
+}
+
+agent Recommender {
+  model "llama3"
+  on predict(input) {
+    render model.run(input)
+  }
+}
+
+fn main() {
+  let user = {"name": "Alice"}
+  Auth.login(user)
+  Recommender.predict("recommend me a book")
+}
+```
+
+---
+
+## 🔧 Basic Language Concepts
+
+### Variables & Types
+```ae
+let x: int = 10
+let name: string = "AeroFlow"
+let is_active: bool = true
+let items: list[int] = [1,2,3]
+```
+
+### Functions
+```ae
+fn greet(name: string) -> string {
+  render "Hello, " + name
+}
+```
+
+### Actors & Agents
+```ae
+actor User {
+  on login(data) {
+    render "User logged in"
+  }
+}
+
+agent Recommender {
+  model "llama3"
+  on predict(input) {
+    render model.run(input)
+  }
+}
+```
+
+### Imports / Capabilities
+```ae
+from http core
+from db postgres
+from ai openai
+```
+
+---
+
+## �🔬 Deep Dive: The Elite Engine Theory
 
 ### 1. Compiler Optimizations (Depth over Breadth)
 The AeroFlow compiler performs **Semantic Constant Folding** and **Causal Dead-Code Elimination (CDCE)**.
@@ -161,11 +221,18 @@ In a distributed context, AeroFlow uses **Vector Clocks** combined with the dete
 
 The official development environment is designed for the **AeroFlow Elite Engine**, featuring:
 
-- **Deterministic Trace Viewer**: Visualize actor messages on a timeline.
-- **Time-Travel Debugger**: Step backward and forward through execution history.
-- **Snapshot Inspector**: View the frozen memory state of any actor.
-- **Elite Dark Mode**: High-contrast, neon-highlighted syntax (`#0d1117` bg).
-- **Actor Graph**: Visualization of distributed message flows.
+- **Syntax Highlighting**: Specialized for `render`, `from package layer`, and `agent`.
+- **Actor Graph Visualization**: Real-time view of distributed message flows.
+- **Time-Travel Debug Panel**: Scrub through execution history, rewind, and fork.
+- **Snapshot Explorer**: View the frozen memory state of any actor.
+- **Deployment Buttons**: One-click deployment to WASM and Mobile targets.
+- **Deterministic Logs Panel**: Complete audit trail of every logical clock tick.
+
+### Themes
+| Theme | Background | Highlights |
+| :--- | :--- | :--- |
+| **Light** | `#ffffff` | `#1a73e8`, `#0d47a1` |
+| **Dark** | `#0d1117` | `#82cfff`, `#ffdd57` |
 
 ---
 
@@ -207,10 +274,18 @@ The official development environment is designed for the **AeroFlow Elite Engine
 
 ## 🛠️ Installation & Usage
 
+### 1. Install Core Runtime
 ```bash
-# Build the core compiler and runtime
-cargo build --release --bin aeroflow-cli
+curl -fsSL https://github.com/Adiytisuman24/Aeroflow/raw/main/install.sh | sh
+```
 
+### 2. Install IDE
+```bash
+aeroflow install ide
+```
+
+### 3. Basic Usage
+```bash
 # Initialize a new project
 aeroflow-cli init my_app
 
@@ -220,6 +295,19 @@ aeroflow-cli run examples/hello.aefl
 # View the execution timeline
 aeroflow-cli trace
 ```
+
+---
+
+## 📜 Vision
+
+AeroFlow aims to:
+- **Make distributed computing deterministic**: Eliminate race conditions at the architectural level.
+- **Kill cold-start latency**: Enable instant serverless and edge compute via snapshots.
+- **Enable a universal execution layer**: Same logic on mobile, server, browser, and edge.
+- **Provide an AI-native runtime**: Specialized primitives for production AI inference.
+- **Build future-proof secure systems**: Capability-based security by default.
+
+AeroFlow is not a scripting toy — it is a deterministic, production-grade language + runtime + IDE.
 
 ---
 
@@ -239,6 +327,15 @@ aeroflow-cli trace
 1. Fork the repo.
 2. Ensure tests pass: `cargo test` & `aeroflow-cli test`.
 3. Submit a PR.
+
+---
+
+## 🔗 Links
+- [AeroFlow Official Site](https://github.com/Adiytisuman24/Aeroflow)
+- [Documentation](https://github.com/Adiytisuman24/Aeroflow/tree/main/docs)
+- [IDE Downloads](https://github.com/Adiytisuman24/Aeroflow/releases)
+
+---
 
 ## 📜 License
 Created with ❤️ by the AeroFlow team. Licensed under the **Apache License 2.0**.
