@@ -5,6 +5,7 @@
 [![Deterministic](https://img.shields.io/badge/Deterministic-100%25-blueviolet.svg)](https://github.com/Adiytisuman24/Aeroflow)
 
 **AeroFlow** is a high-performance, deterministic, and AI-native runtime engine. It is designed to run the same program identically across servers, browsers, mobile, and edge environments by eliminating architectural nondeterminism.
+<img width="1536" height="1024" alt="aeroflow" src="https://github.com/user-attachments/assets/c8404cc5-96cf-4e5c-a776-c2f10ca64943" />
 
 ---
 
