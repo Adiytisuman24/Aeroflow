@@ -8,6 +8,8 @@ pub mod supervisor;
 pub mod system;
 pub mod trace;
 pub mod vm_actor;
+pub mod distributed;
+pub mod wasm;
 
 pub use vm::VM;
 pub use arena::Arena;

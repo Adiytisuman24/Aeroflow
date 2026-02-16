@@ -72,6 +72,16 @@ impl Scheduler {
         self.queue.lock().push(ScheduledMessage { message: msg, target });
     }
 
+    pub fn send_with_time(&self, target: ActorId, message_data: crate::mailbox::MessageData, sender: ActorId, time: u64, seq: u64) {
+        let mut clock = self.logical_clock.lock();
+        if time > *clock {
+            *clock = time;
+        }
+
+        let msg = Message::new(sender, message_data, time, seq);
+        self.queue.lock().push(ScheduledMessage { message: msg, target });
+    }
+
     pub fn step(&self) -> bool {
         let scheduled = {
             let mut q = self.queue.lock();

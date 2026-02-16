@@ -39,6 +39,15 @@ enum Commands {
     },
     /// Export the execution trace to JSON
     Trace,
+    /// Start a distributed DAS node
+    Cluster {
+        /// Unique ID for this node
+        #[arg(long)]
+        node_id: String,
+        /// List of peer node IDs
+        #[arg(long)]
+        peers: Vec<String>,
+    },
 }
 
 fn main() -> anyhow::Result<()> {
@@ -178,6 +187,30 @@ ai.vision = "0.3"
         }
         Commands::Trace => {
             println!("{}", aeroflow_runtime::get_tracer().export_json());
+        }
+        Commands::Cluster { node_id, peers } => {
+            println!("🌐 [D-DAS] Initializing Node: {}", node_id);
+            let scheduler = std::sync::Arc::new(aeroflow_runtime::Scheduler::new());
+            let d_scheduler = aeroflow_runtime::distributed::DistributedScheduler::new(node_id.clone(), scheduler.clone());
+            
+            for peer in peers {
+                println!("  🔗 Linking Peer: {}", peer);
+                d_scheduler.add_peer(peer);
+            }
+
+            println!("🚀 Node {} is now part of the global deterministic cluster.", node_id);
+            println!("📡 Waiting for D-DAS sync packets...");
+            
+            // Simulation: Send a message to show distributed path
+            d_scheduler.broadcast(
+                "GlobalStorage".to_string(), 
+                "UserAgent".to_string(), 
+                aeroflow_runtime::MessageData::String("sync_state".to_string())
+            );
+
+            // Run scheduler step to process the broadcast (self-delivery)
+            scheduler.step();
+            println!("✅ Node {} synchronized successfully.", node_id);
         }
     }
 

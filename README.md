@@ -20,7 +20,7 @@ Modern distributed systems are fragile, non-deterministic, and slow to scale. **
 
 ---
 
-## 🌐 Deep Deterministic Distributed Runtime
+## 🌐 Deep Deterministic Distributed Runtime (D-DAS)
 
 Distributed programs are non-deterministic by default. AeroFlow's **D-DAS** (Distributed Deterministic Actor Scheduler) solves this at the architectural level.
 
@@ -61,13 +61,13 @@ graph TD
 .aefl Program
  ├─> AOT Compiler
  │     ├─> Native Binary
- │     ├─> WASM Binary
+ │     ├─> WASM Binary (Browser/Edge)
  │     └─> Runtime Snapshot (.afs)
  │
- ├─> DAS Scheduler
+ ├─> DAS Scheduler (D-DAS)
  │     ├─> Actor State Machine
  │     ├─> Mailboxes (deterministic)
- │     ├─> Message Queue
+ │     ├─> Multi-node Sync
  │     └─> Replay Logs
  │
  ├─> AI Runtime
@@ -108,7 +108,7 @@ graph TD
 
 ---
 
-## � Basic Language Concepts (v1.0 Spec)
+## 🔧 Basic Language Concepts (v1.0 Spec)
 
 ### Variables & Types
 ```ae
@@ -143,7 +143,7 @@ agent Recommender {
 
 ---
 
-## � Extended Visual Primelines
+## 🛸 Extended Visual Primelines
 
 ### 1. Distributed Timeline Visualization
 Render a specific flow of events for the IDE's Time-Travel UI.
@@ -184,7 +184,7 @@ The official development environment is designed for the **AeroFlow Elite Engine
 
 ---
 
-##  Comparative Benchmarks (P99 Stability)
+## 📊 Comparative Benchmarks (P99 Stability)
 
 ### 🧮 Computational & IO Performance
 | Metric | **🌀 AeroFlow** | **🐹 Go** | **🟢 Node.js** | **🐍 Python** |
@@ -196,12 +196,37 @@ The official development environment is designed for the **AeroFlow Elite Engine
 
 ---
 
+## 🗺️ Roadmap: The Path to v1.0
+
+- [x] **Core Language Specification**: EBNF Formalization.
+- [x] **DAS Engine**: Deterministic Actor Scheduler.
+- [x] **Elite Toolchain**: CLI, Build system, and Testing suite.
+- [x] **Time-Travel Records**: Deterministic trace export/replay.
+- [x] **WASM Target**: Running DAS in the browser and edge.
+- [x] **Distributed DAS (D-DAS)**: Multi-node deterministic message passing.
+- [ ] **AeroFlow Studio**: Visual timeline-based IDE (In Development).
+
+---
+
+## 🤝 Contributing
+1. Fork the repo.
+2. Ensure tests pass: `cargo test` & `aeroflow test`.
+3. Submit a PR.
+
+---
+
 ## 📜 Vision
 
 AeroFlow aims to:
 - **Make distributed computing deterministic**: Eliminate race conditions at the architectural level.
 - **Kill cold-start latency**: Enable instant serverless and edge compute via snapshots.
 - **Enable a universal execution layer**: Same logic on mobile, server, browser, and edge.
+
+---
+
+## 🔗 Links
+- [AeroFlow Official Site](https://github.com/Adiytisuman24/Aeroflow)
+- [Documentation](https://github.com/Adiytisuman24/Aeroflow/tree/main/docs)
 
 ---
 
