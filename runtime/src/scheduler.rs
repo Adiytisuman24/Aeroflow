@@ -42,8 +42,8 @@ impl PartialOrd for ScheduledMessage {
 pub struct Scheduler {
     actors: Mutex<HashMap<ActorId, ActorCell>>,
     queue: Mutex<BinaryHeap<ScheduledMessage>>,
-    logical_clock: Mutex<u64>,
-    sequence_counter: Mutex<u64>,
+    pub(crate) logical_clock: Mutex<u64>,
+    pub(crate) sequence_counter: Mutex<u64>,
 }
 
 impl Scheduler {

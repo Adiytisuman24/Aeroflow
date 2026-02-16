@@ -172,7 +172,7 @@ fn main() -> anyhow::Result<()> {
                     println!("🚀 Launching {} runtime...", runtime);
                     let scheduler = aeroflow_runtime::Scheduler::new();
                     
-                    if let Some(l) = log {
+                    if let Some(l) = &log {
                         println!("📝 Saving execution logs to: {}", l.display());
                     }
 
@@ -202,7 +202,7 @@ fn main() -> anyhow::Result<()> {
             let start_time = std::time::Instant::now();
             let source_str = fs::read_to_string(source)?;
             match compile(&source_str) {
-                Ok(chunk) => {
+                Ok(_chunk) => {
                     let compile_time = start_time.elapsed();
                     println!("✓ Build successful in {:.4}ms.", compile_time.as_secs_f64() * 1000.0);
                     if let Some(s) = snapshot {
@@ -327,7 +327,7 @@ ai.vision = "0.3"
             d_scheduler.broadcast(
                 "GlobalStorage".to_string(), 
                 "UserAgent".to_string(), 
-                aeroflow_runtime::MessageData::String("sync_state".to_string())
+                aeroflow_runtime::MessageData::Text("sync_state".to_string())
             );
 
             // Run scheduler step to process the broadcast (self-delivery)

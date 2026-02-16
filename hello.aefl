@@ -1,0 +1,4 @@
+from http core
+
+render { "🚀 Hello from my first AeroFlow program!" }
+render { "This is working perfectly!" }

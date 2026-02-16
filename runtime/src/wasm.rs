@@ -1,6 +1,7 @@
 use wasm_bindgen::prelude::*;
 use crate::scheduler::Scheduler;
-use crate::actor::{ActorCell, ActorId, VMActor};
+use crate::actor::{ActorCell, ActorId};
+use crate::VMActor;
 use crate::mailbox::MessageData;
 use std::sync::Arc;
 
@@ -33,7 +34,7 @@ impl WasmScheduler {
     }
 
     pub fn send_message(&self, target: String, sender: String, data: String) {
-        let msg_data = MessageData::String(data);
+        let msg_data = MessageData::Text(data);
         self.scheduler.send(target, msg_data, sender);
     }
 
