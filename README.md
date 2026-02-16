@@ -12,11 +12,25 @@
 
 Modern distributed systems are fragile, non-deterministic, and slow to scale. **AeroFlow fixes the foundation.**
 
-- **Provable Determinism**: Same input + same logical time = bit-for-bit identical output. Every time.
-- **Microsecond Cold-Starts**: Uses **Snapshot Resumption** to bypass traditional OS/container boot times.
-- **Actor-Based Isolation**: Every unit of work (Actor/Agent) has its own private memory arena (Zero-GC).
-- **AI as a Primitive**: Tensors, Models, and Agents are first-class citizens in the language.
-- **Time-Travel Debugging**: Record execution traces and scrub through program history like a video.
+- **Provable Determinism**: Same input + same logical time = bit-for-bit identical output.
+- **Microsecond Cold-Starts**: Uses **Snapshot Resumption** (`.afs`) for instant restore.
+- **Actor-Based Isolation**: Isolated memory arenas (Zero-GC) per unit of work.
+- **AI as a Primitive**: Tensors, Models, and Agents are first-class citizens.
+- **Time-Travel Debugging**: Deterministic trace replay across distributed nodes.
+
+---
+
+## 🌐 Deep Deterministic Distributed Runtime
+
+Distributed programs are non-deterministic by default. AeroFlow's **D-DAS** (Distributed Deterministic Actor Scheduler) solves this at the architectural level.
+
+| Problem | AeroFlow Solution |
+| :--- | :--- |
+| **Race Conditions** | Actor model + deterministic DAS scheduler. |
+| **Message Reordering** | Logical-time ordered queues (logical_time, actor_id, seq). |
+| **Clock Skew** | Only logical clocks used; zero wall-clock dependency. |
+| **Heisenbugs** | Replayable bit-reproducible execution logs. |
+| **Impossible Debugging** | Timeline visualization + causality DAG graphs. |
 
 ---
 
@@ -77,141 +91,78 @@ graph TD
 
 ### 1. Deterministic Global Compute (DAS + Multi-Node)
 
-| Feature | Description |
-| :--- | :--- |
-| **DAS (Deterministic Actor Scheduler)** | Actor-based runtime enforcing deterministic message ordering. |
-| **Replayable Execution Logs** | Every message and state diff is logged for time-travel debugging. |
-| **State Machine Runtime** | Actor state is immutable outside of explicit messages; deterministic transitions. |
-| **Deterministic Random & Time** | `time.now()` → logical clock, `rand.next(seed)` → deterministic RNG. |
-| **Multi-Node Determinism** | Messages between nodes follow total order by `logical_time` + `actor_id` + `seq`. |
-| **WASM Target** | DAS compiled to WASM runs deterministically in browser, edge, and sandboxed environments. |
+- **Declarative Concurrency**: Declare actors, messages, and timers; runtime enforces total order.
+- **Visual Execution Timelines**: IDE shows a DAG of causal distributed events.
+- **Bit-Level Reproducibility**: Execution hashing allows bit-for-bit verification of results across nodes.
 
-#### Scheduler Logic
-`Actor -> Mailbox -> DAS -> Ready Queue`
-*   **Message**: `{from, to, payload, logical_time, seq}`
-*   **Global Execution Order**: `sort(logical_time, to_actor_id, seq)`
+### 🧬 2. AI-Native Runtime & ML Pipelines
 
-### 🧬 2. AI-Native Runtime
-
-| Feature | Description |
-| :--- | :--- |
-| **Tensor Primitives** | Built-in vector/matrix types. |
-| **GPU Scheduling** | Wrap CUDA/Metal/Vulkan, deterministic memory. |
-| **Deterministic Layout** | All tensors allocated in fixed order. |
-| **Async Inference** | Deterministic execution with message passing. |
-| **Agents** | `agent` keyword integrates models into DAS seamlessly. |
+- **Deterministic AI Inference**: `agent` keyword integrates models into DAS for reproducible outputs.
+- **Reproducible Training Graphs**: Tensor operations are fully deterministic.
+- **Zero Python Dependency**: Deploy AI agents to WASM or mobile without a bulky runtime.
 
 ### ⚡ 3. Zero Cold Start Serverless
-*   **AOT Compilation**: `.aefl` → native binary + runtime snapshot.
-*   **Freeze Memory State**: Scheduler + actors + mailboxes → `.afs` snapshot.
-*   **Snapshot Restore**: Restore runtime instantly (microseconds).
-*   **No OS Boot**: Avoid container cold start overhead.
-*   **Multi-Node Snapshots**: Distributed nodes restore identical states.
-
-### 🌍 4. Universal Execution Layer
-| Target | Runtime |
-| :--- | :--- |
-| **iPhone** | Swift Bridge + DAS |
-| **Android** | Kotlin Bridge + DAS |
-| **Browser** | WASM + DAS |
-| **Server** | Native runtime + DAS |
-| **Blockchain** | WASM sandbox |
-| **Edge** | WASM sandbox + deterministic runtime |
+- **AOT Compilation**: `.aefl` → native binary + runtime snapshot.
+- **Freeze Memory State**: Scheduler + actors + mailboxes → `.afs` snapshot.
+- **Snapshot Restore**: Restore runtime instantly (microseconds).
 
 ---
 
-## 🔒 5. Secure by Design
-*   **Sandbox per Actor**: Complete isolation (like WASM).
-*   **Capability System**: `from <package> <layer>` defines allowed operations.
-*   **No Implicit OS Access**: File, network, GPU only via capabilities.
-*   **Snapshot Isolation**: Prevent state leakage between actors during resumption.
-
----
-
-## � Example Program
-
-```ae
-from db postgres
-from ai openai
-
-actor Auth {
-  on login(user) {
-    render "Logged in: " + user.name
-  }
-}
-
-agent Recommender {
-  model "llama3"
-  on predict(input) {
-    render model.run(input)
-  }
-}
-
-fn main() {
-  let user = {"name": "Alice"}
-  Auth.login(user)
-  Recommender.predict("recommend me a book")
-}
-```
-
----
-
-## 🔧 Basic Language Concepts
+## � Basic Language Concepts (v1.0 Spec)
 
 ### Variables & Types
 ```ae
 let x: int = 10
 let name: string = "AeroFlow"
-let is_active: bool = true
-let items: list[int] = [1,2,3]
+let items: list<string> = ["a", "b"]
+let config: dict<string, int> = {"port": 8080}
 ```
 
 ### Functions
 ```ae
 fn greet(name: string) -> string {
-  render "Hello, " + name
+  render {"Hello, " + name} // Expressions inside render blocks
 }
 ```
 
 ### Actors & Agents
 ```ae
-actor User {
-  on login(data) {
-    render "User logged in"
-  }
+actor Auth {
+    on login(user: string) {
+        render {"User: " + user + " authenticated"}
+    }
 }
 
 agent Recommender {
-  model "llama3"
-  on predict(input) {
-    render model.run(input)
-  }
+    model "llama3"
+    on predict(input: string) {
+        render {model.run(input)} // Deterministic inference
+    }
 }
-```
-
-### Imports / Capabilities
-```ae
-from http core
-from db postgres
-from ai openai
 ```
 
 ---
 
-## �🔬 Deep Dive: The Elite Engine Theory
+## � Extended Visual Primelines
 
-### 1. Compiler Optimizations (Depth over Breadth)
-The AeroFlow compiler performs **Semantic Constant Folding** and **Causal Dead-Code Elimination (CDCE)**.
-- **LLVM MIR Lifting**: AeroFlow IR is designed to be "liftable" into Rust's Middle-Level IR (MIR).
-- **Deterministic IR**: Every instruction is verified to have zero side-effects outside its assigned actor arena.
+### 1. Distributed Timeline Visualization
+Render a specific flow of events for the IDE's Time-Travel UI.
+```ae
+render timeline {
+    node Auth -> Recommender at 10ms payload "login event"
+    node Recommender -> UI at tick=125 payload {"items": [1,2,3]}
+}
+```
 
-### 2. Distributed DAS (D-DAS)
-In a distributed context, AeroFlow uses **Vector Clocks** combined with the deterministic scheduler to ensure that horizontal scaling does not introduce race conditions.
-- **Network Invariance**: The logical timestamp is locked. Even if the network delays the packet, the DAS scheduler ensures the message is processed at the exact same logical "tick" on every node.
-
-### 3. Runtime Scheduling & LLVM IR Transformations
-- **JIT vs AOT**: Small scripts run in the **Deterministic VM** for instant starts. Large, hot loops are transformed into **LLVM bitcode**.
-- **Arena Memory**: Memory is allocated in contiguous blocks per actor. Reduces L3 cache misses by 40%.
+### 2. Distributed State Snapshot
+Inspect the state of multiple nodes at a specific logical tick.
+```ae
+render distributed state {
+    server_1.counter
+    server_2.counter
+    load_balancer.status
+}
+```
 
 ---
 
@@ -221,12 +172,9 @@ In a distributed context, AeroFlow uses **Vector Clocks** combined with the dete
 
 The official development environment is designed for the **AeroFlow Elite Engine**, featuring:
 
-- **Syntax Highlighting**: Specialized for `render`, `from package layer`, and `agent`.
+- **Syntax Highlighting**: Specialized for `render { ... }`, `agent`, and `timeline`.
 - **Actor Graph Visualization**: Real-time view of distributed message flows.
 - **Time-Travel Debug Panel**: Scrub through execution history, rewind, and fork.
-- **Snapshot Explorer**: View the frozen memory state of any actor.
-- **Deployment Buttons**: One-click deployment to WASM and Mobile targets.
-- **Deterministic Logs Panel**: Complete audit trail of every logical clock tick.
 
 ### Themes
 | Theme | Background | Highlights |
@@ -236,32 +184,7 @@ The official development environment is designed for the **AeroFlow Elite Engine
 
 ---
 
-## 📂 Repository Structure
-
-```text
-.
-├── cli/                 # Unified toolchain (aeroflow-cli)
-├── compiler/            # Tier-0 AeroFlow-to-IR compiler
-├── runtime/             # The DAS-powered execution engine
-├── aeroflow-lsp/        # VS Code Language Server Protocol support
-├── aeroflow-conformance/# Language conformance test suite
-├── docs/                # EBNF Grammar, Spec, and CLI Reference
-├── stdlib/              # Standard Library (HTTP, AI, Crypto)
-├── examples/            # Reference AeroFlow implementations
-└── README.md            # The AeroFlow Manifesto
-```
-
----
-
-## 📊 Comparative Benchmarks (P99 Stability)
-
-### 🛡️ Runtime Mechanics Comparison
-| Metric | **🌀 AeroFlow** | **🐹 Go** | **🟢 Node.js** | **🐍 Python** |
-| :--- | :--- | :--- | :--- | :--- |
-| **Cold Start** | **~500µs – 3ms** | ~15ms – 30ms | ~60ms – 150ms | ~40ms – 100ms |
-| **Execution** | **Deterministic (DAS)** | Nondeterministic | Nondeterministic | Nondeterministic |
-| **Memory Model** | **Local Arena** (Zero-GC) | Global GC (STW) | Global GC | Ref Counting |
-| **Concurrency** | Causal Actor Link | Goroutines | Event Loop | GIL Restricted |
+##  Comparative Benchmarks (P99 Stability)
 
 ### 🧮 Computational & IO Performance
 | Metric | **🌀 AeroFlow** | **🐹 Go** | **🟢 Node.js** | **🐍 Python** |
@@ -269,32 +192,7 @@ The official development environment is designed for the **AeroFlow Elite Engine
 | **Fibonacci (40)** | ~480ms | **~320ms** | ~450ms | ~28,000ms |
 | **JSON Parse (10MB)** | **~12ms** | ~18ms | ~25ms | ~80ms |
 | **HTTP Req/Sec** | ~140k | **~185k** | ~110k | ~12k |
-
----
-
-## 🛠️ Installation & Usage
-
-### 1. Install Core Runtime
-```bash
-curl -fsSL https://github.com/Adiytisuman24/Aeroflow/raw/main/install.sh | sh
-```
-
-### 2. Install IDE
-```bash
-aeroflow install ide
-```
-
-### 3. Basic Usage
-```bash
-# Initialize a new project
-aeroflow-cli init my_app
-
-# Run a deterministic script
-aeroflow-cli run examples/hello.aefl
-
-# View the execution timeline
-aeroflow-cli trace
-```
+| **Cold Start** | **<500µs** | ~20ms | ~80ms | ~150ms |
 
 ---
 
@@ -304,36 +202,6 @@ AeroFlow aims to:
 - **Make distributed computing deterministic**: Eliminate race conditions at the architectural level.
 - **Kill cold-start latency**: Enable instant serverless and edge compute via snapshots.
 - **Enable a universal execution layer**: Same logic on mobile, server, browser, and edge.
-- **Provide an AI-native runtime**: Specialized primitives for production AI inference.
-- **Build future-proof secure systems**: Capability-based security by default.
-
-AeroFlow is not a scripting toy — it is a deterministic, production-grade language + runtime + IDE.
-
----
-
-## 🗺️ Roadmap: The Path to v1.0
-
-- [x] **Core Language Specification**: EBNF Formalization.
-- [x] **DAS Engine**: Deterministic Actor Scheduler.
-- [x] **Elite Toolchain**: CLI, Build system, and Testing suite.
-- [x] **Time-Travel Records**: Deterministic trace export/replay.
-- [ ] **AeroFlow Studio**: Visual timeline-based IDE.
-- [ ] **WASM Target**: Running DAS in the browser.
-- [ ] **Distributed DAS**: Multi-node deterministic message passing.
-
----
-
-## 🤝 Contributing
-1. Fork the repo.
-2. Ensure tests pass: `cargo test` & `aeroflow-cli test`.
-3. Submit a PR.
-
----
-
-## 🔗 Links
-- [AeroFlow Official Site](https://github.com/Adiytisuman24/Aeroflow)
-- [Documentation](https://github.com/Adiytisuman24/Aeroflow/tree/main/docs)
-- [IDE Downloads](https://github.com/Adiytisuman24/Aeroflow/releases)
 
 ---
 

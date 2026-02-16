@@ -171,6 +171,12 @@ impl VM {
                         }
                     }
                 }
+                Instr::RenderTimeline => {
+                    println!("🌀 [DAS] EMITTING DISTRIBUTED TIMELINE DAG...");
+                }
+                Instr::RenderState => {
+                    println!("🧩 [DAS] EMITTING DETERMINISTIC STATE SNAPSHOT...");
+                }
             }
             ip += 1;
         }

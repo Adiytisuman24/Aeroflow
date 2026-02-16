@@ -32,6 +32,8 @@ pub enum Instr {
     JumpIfFalse(usize),
     Return,
     Render,              // Context-aware output
+    RenderTimeline,      // Emit distributed event graph
+    RenderState,         // Emit engine state snapshot
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]

@@ -46,6 +46,35 @@ pub enum TokenKind {
     #[token("on")]
     On,
 
+    #[token("timeline")]
+    Timeline,
+    #[token("distributed")]
+    Distributed,
+    #[token("at")]
+    At,
+    #[token("payload")]
+    Payload,
+    #[token("tick")]
+    Tick,
+    #[token("and")]
+    And,
+    #[token("or")]
+    Or,
+
+    // Types
+    #[token("int")]
+    IntType,
+    #[token("float")]
+    FloatType,
+    #[token("string")]
+    StringType,
+    #[token("bool")]
+    BoolType,
+    #[token("list")]
+    List,
+    #[token("dict")]
+    Dict,
+
     // Keywords - IO / Imports / Env
     #[token("render")]
     Render,
@@ -75,6 +104,8 @@ pub enum TokenKind {
     Star,
     #[token("/")]
     Slash,
+    #[token("->")]
+    Arrow,
     #[token("=")]
     Equal,
     #[token("(")]

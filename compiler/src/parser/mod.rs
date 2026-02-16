@@ -110,26 +110,38 @@ impl<'a> Parser<'a> {
         Stmt::While { condition, body }
     }
 
+    fn parse_type(&mut self) -> crate::ast::Type {
+        if self.match_token(TokenKind::IntType) { crate::ast::Type::Int }
+        else if self.match_token(TokenKind::FloatType) { crate::ast::Type::Float }
+        else if self.match_token(TokenKind::StringType) { crate::ast::Type::String }
+        else if self.match_token(TokenKind::BoolType) { crate::ast::Type::Bool }
+        else if self.match_token(TokenKind::List) {
+            self.consume(TokenKind::LAngle, "Expect '<' after 'list'");
+            let inner = self.parse_type();
+            self.consume(TokenKind::RAngle, "Expect '>' after list type");
+            crate::ast::Type::List(Box::new(inner))
+        }
+        else if self.match_token(TokenKind::Dict) {
+            self.consume(TokenKind::LAngle, "Expect '<' after 'dict'");
+            let key = self.parse_type();
+            self.consume(TokenKind::Comma, "Expect ',' between dict types");
+            let value = self.parse_type();
+            self.consume(TokenKind::RAngle, "Expect '>' after dict types");
+            crate::ast::Type::Dict(Box::new(key), Box::new(value))
+        }
+        else { crate::ast::Type::Void }
+    }
+
     fn parse_let(&mut self) -> Stmt {
         self.consume(TokenKind::Ident(String::new()), "Expect variable name after let");
         let name = if let TokenKind::Ident(n) = &self.previous { n.clone() } else { panic!() };
         
-        if self.match_token(TokenKind::Colon) {
-            self.advance(); // Skip type
-            if self.match_token(TokenKind::LAngle) {
-                while !self.match_token(TokenKind::RAngle) { self.advance(); }
-            }
-            if self.match_token(TokenKind::LBracket) {
-                while !self.match_token(TokenKind::RBracket) { self.advance(); }
-            }
-        }
+        self.consume(TokenKind::Colon, "Expect ':' after variable name");
+        let r#type = self.parse_type();
 
-        let value = if self.match_token(TokenKind::Equal) {
-            self.parse_expression()
-        } else {
-            Expr::Number(0.0)
-        };
-        Stmt::VarDecl { name, value }
+        self.consume(TokenKind::Equal, "Expect '=' after type");
+        let value = self.parse_expression();
+        Stmt::VarDecl { name, r#type, value }
     }
 
     fn parse_fn(&mut self, is_pure: bool) -> Stmt {
@@ -141,12 +153,21 @@ impl<'a> Parser<'a> {
         if self.current != TokenKind::RParen {
             loop {
                 self.consume(TokenKind::Ident(String::new()), "Expect param name");
-                if let TokenKind::Ident(p) = &self.previous { params.push(p.clone()); }
+                let p_name = if let TokenKind::Ident(p) = &self.previous { p.clone() } else { panic!() };
+                self.consume(TokenKind::Colon, "Expect ':' after param name");
+                let p_type = self.parse_type();
+                params.push((p_name, p_type));
                 if !self.match_token(TokenKind::Comma) { break; }
             }
         }
         self.consume(TokenKind::RParen, "Expect ')' after params");
         
+        let return_type = if self.match_token(TokenKind::Arrow) {
+            self.parse_type()
+        } else {
+            crate::ast::Type::Void
+        };
+
         self.consume(TokenKind::LBrace, "Expect '{' before function body");
         let mut body = Vec::new();
         while self.current != TokenKind::RBrace && self.current != TokenKind::EOF {
@@ -154,7 +175,7 @@ impl<'a> Parser<'a> {
         }
         self.consume(TokenKind::RBrace, "Expect '}' after function body");
         
-        Stmt::Fn { name, params, body, is_pure }
+        Stmt::Fn { name, params, body, return_type, is_pure }
     }
 
     fn parse_from(&mut self) -> Stmt {
@@ -168,8 +189,65 @@ impl<'a> Parser<'a> {
     }
 
     fn parse_render(&mut self) -> Stmt {
-        let expr = self.parse_expression();
-        Stmt::Render(expr)
+        self.consume(TokenKind::LBrace, "Expect '{' after 'render'");
+        
+        let render_expr = if self.match_token(TokenKind::Timeline) {
+            crate::ast::RenderExpression::Timeline(self.parse_timeline())
+        } else if self.match_token(TokenKind::Distributed) {
+            self.consume(TokenKind::State, "Expect 'state' after 'distributed'");
+            crate::ast::RenderExpression::DistributedState(self.parse_distributed_state())
+        } else {
+            crate::ast::RenderExpression::Expr(self.parse_expression())
+        };
+
+        self.consume(TokenKind::RBrace, "Expect '}' after render block");
+        Stmt::Render(render_expr)
+    }
+
+    fn parse_timeline(&mut self) -> crate::ast::TimelineBlock {
+        self.consume(TokenKind::LBrace, "Expect '{' after 'timeline'");
+        let mut events = Vec::new();
+        while self.current != TokenKind::RBrace {
+            self.consume(TokenKind::Ident(String::new()), "Expect node name");
+            let from = if let TokenKind::Ident(n) = &self.previous { n.clone() } else { panic!() };
+            self.consume(TokenKind::Arrow, "Expect '->'");
+            self.consume(TokenKind::Ident(String::new()), "Expect target node name");
+            let to = if let TokenKind::Ident(n) = &self.previous { n.clone() } else { panic!() };
+            self.consume(TokenKind::At, "Expect 'at'");
+            
+            let at_ms = if self.match_token(TokenKind::Number(0.0)) {
+                if let TokenKind::Number(n) = self.previous { n as u64 } else { 0 }
+            } else {
+                self.consume(TokenKind::Tick, "Expect 'tick'");
+                self.consume(TokenKind::Equal, "Expect '=' after 'tick'");
+                self.consume(TokenKind::Number(0.0), "Expect tick number");
+                if let TokenKind::Number(n) = self.previous { n as u64 } else { 0 }
+            };
+
+            // Skip 'ms' if present (it's part of the number token usually or extra token)
+            self.match_token(TokenKind::Ident("ms".to_string()));
+
+            self.consume(TokenKind::Payload, "Expect 'payload'");
+            let payload = self.parse_expression();
+            events.push(crate::ast::TimelineEvent { from, to, at_ms, payload });
+        }
+        self.consume(TokenKind::RBrace, "Expect '}' after timeline");
+        crate::ast::TimelineBlock { events }
+    }
+
+    fn parse_distributed_state(&mut self) -> crate::ast::DistributedStateBlock {
+        self.consume(TokenKind::LBrace, "Expect '{' after 'distributed state'");
+        let mut state_refs = Vec::new();
+        while self.current != TokenKind::RBrace {
+            self.consume(TokenKind::Ident(String::new()), "Expect node name");
+            let node = if let TokenKind::Ident(n) = &self.previous { n.clone() } else { panic!() };
+            self.consume(TokenKind::Dot, "Expect '.'");
+            self.consume(TokenKind::Ident(String::new()), "Expect field name");
+            let field = if let TokenKind::Ident(f) = &self.previous { f.clone() } else { panic!() };
+            state_refs.push(crate::ast::NodeStateRef { node, field });
+        }
+        self.consume(TokenKind::RBrace, "Expect '}' after distributed state");
+        crate::ast::DistributedStateBlock { state_refs }
     }
 
     fn parse_spawn(&mut self) -> Stmt {
@@ -193,12 +271,44 @@ impl<'a> Parser<'a> {
         self.consume(TokenKind::Ident(String::new()), "Expect agent name");
         let name = if let TokenKind::Ident(n) = &self.previous { n.clone() } else { panic!() };
         self.consume(TokenKind::LBrace, "Expect '{'");
+        
+        let mut model = None;
+        let mut handlers = Vec::new();
         let mut body = Vec::new();
+
         while self.current != TokenKind::RBrace {
-            body.push(self.parse_statement());
+            if self.match_token(TokenKind::Model) {
+                self.consume(TokenKind::String(String::new()), "Expect model identifier string");
+                if let TokenKind::String(s) = &self.previous { model = Some(s.clone()); }
+            } else if self.match_token(TokenKind::On) {
+                self.consume(TokenKind::Ident(String::new()), "Expect event name");
+                let h_name = if let TokenKind::Ident(n) = &self.previous { n.clone() } else { panic!() };
+                self.consume(TokenKind::LParen, "Expect '('");
+                let mut h_params = Vec::new();
+                if self.current != TokenKind::RParen {
+                    loop {
+                        self.consume(TokenKind::Ident(String::new()), "Expect param name");
+                        let p_name = if let TokenKind::Ident(p) = &self.previous { p.clone() } else { panic!() };
+                        self.consume(TokenKind::Colon, "Expect ':' after param name");
+                        let p_type = self.parse_type();
+                        h_params.push((p_name, p_type));
+                        if !self.match_token(TokenKind::Comma) { break; }
+                    }
+                }
+                self.consume(TokenKind::RParen, "Expect ')'");
+                self.consume(TokenKind::LBrace, "Expect '{'");
+                let mut h_body = Vec::new();
+                while self.current != TokenKind::RBrace {
+                    h_body.push(self.parse_statement());
+                }
+                self.consume(TokenKind::RBrace, "Expect '}'");
+                handlers.push(crate::ast::EventHandler { name: h_name, params: h_params, body: h_body });
+            } else {
+                body.push(self.parse_statement());
+            }
         }
         self.consume(TokenKind::RBrace, "Expect '}'");
-        Stmt::Agent { name, model: String::new(), body }
+        Stmt::Agent { name, model, handlers, body }
     }
 
     fn parse_model(&mut self) -> Stmt {

@@ -28,13 +28,24 @@ impl Codegen {
             Stmt::Agent { .. } => {}
             Stmt::Model { .. } => {}
             Stmt::FromImport { .. } => {}
-            Stmt::VarDecl { name, value } => {
+            Stmt::VarDecl { name, r#type: _, value } => {
                 self.compile_expr(&value);
                 self.chunk.emit(Instr::StoreVar(name));
             }
-            Stmt::Render(expr) => {
-                self.compile_expr(&expr);
-                self.chunk.emit(Instr::Render);
+            Stmt::Render(render_expr) => {
+                match render_expr {
+                    crate::ast::RenderExpression::Expr(expr) => {
+                        self.compile_expr(&expr);
+                        self.chunk.emit(Instr::Render);
+                    }
+                    crate::ast::RenderExpression::Timeline(_) => {
+                        // For now, Timeline is a hint for the IDE/Scheduler
+                        self.chunk.emit(Instr::RenderTimeline);
+                    }
+                    crate::ast::RenderExpression::DistributedState(_) => {
+                        self.chunk.emit(Instr::RenderState);
+                    }
+                }
             }
             Stmt::Spawn(expr) => {
                 self.compile_expr(&expr);
@@ -99,6 +110,8 @@ impl Codegen {
                     TokenKind::EqualEqual => self.chunk.emit(Instr::Eq),
                     TokenKind::RAngle => self.chunk.emit(Instr::Gt),
                     TokenKind::LAngle => self.chunk.emit(Instr::Lt),
+                    TokenKind::And => self.chunk.emit(Instr::Add), // Placeholder: Use same logic as Add or Eq for now
+                    TokenKind::Or => self.chunk.emit(Instr::Add),  // Placeholder
                     _ => {}
                 }
             }
@@ -110,6 +123,11 @@ impl Codegen {
                 self.chunk.emit(Instr::Call(name.clone(), arg_count));
             }
             Expr::Tensor { .. } => {}
+            Expr::Block(exprs) => {
+                for expr in exprs {
+                    self.compile_expr(expr);
+                }
+            }
         }
     }
 }
