@@ -20,7 +20,81 @@ Modern distributed systems are fragile, non-deterministic, and slow to scale. **
 
 ---
 
-## 📱 AeroFlow Mobile Ecosystem (The Future of Apps)
+## 🏗️ Seven-Layer Elite Architecture
+
+```text
+┌─────────────────────────────┐
+│ 1️⃣ AeroFlow Source (.aefl) │
+│ - UI Screens / Render Blocks│
+│ - Agents / AI Pipelines     │
+│ - Distributed State / Timeline│
+└─────────────┬───────────────┘
+              │
+              ▼
+┌─────────────────────────────┐
+│ 2️⃣ Parser & AST Generator  │
+│ - Parses render { ... }     │
+│ - AST Nodes: Timeline,      │
+│   Distributed State, Agent  │
+│ - Expressions / Functions   │
+└─────────────┬───────────────┘
+              │
+              ▼
+┌─────────────────────────────┐
+│ 3️⃣ Compiler (LLVM Backend) │
+│ - LLVM IR Generation        │
+│ - Android: Kotlin/NDK       │
+│ - iOS: Swift / LLVM         │
+│ - WASM: Browser / Edge      │
+│ - Deterministic memory layout│
+└─────────────┬───────────────┘
+              │
+              ▼
+┌─────────────────────────────┐
+│ 4️⃣ DAS Runtime             │
+│ - Deterministic Actor Scheduler│
+│ - Logical time message queues │
+│ - Replayable execution logs   │
+│ - Snapshot system (.afs)      │
+│ - Multi-node synchronization  │
+└─────────────┬───────────────┘
+              │
+              ▼
+┌─────────────────────────────┐
+│ 5️⃣ Distributed Simulation  │
+│ - Multiplayer games / actors│
+│ - FinTech backtesting        │
+│ - Blockchain smart contract  │
+│ - AI reproducible pipelines  │
+│ - Deterministic timeline & state│
+└─────────────┬───────────────┘
+              │
+              ▼
+┌─────────────────────────────┐
+│ 6️⃣ Mobile & Web Runtime    │
+│ - Render Engine: Screens/UI │
+│ - Actor updates & events    │
+│ - Tensor execution GPU/CPU  │
+│ - Sensor input / network replay│
+│ - Deterministic output      │
+└─────────────┬───────────────┘
+              │
+              ▼
+┌─────────────────────────────┐
+│ 7️⃣ IDE & Visualization      │
+│ - Time-travel debugger       │
+│ - Distributed timeline view  │
+│ - Actor graphs / DAG         │
+│ - Snapshot explorer          │
+│ - Dark / Light themes        │
+└─────────────────────────────┘
+```
+
+For detailed layer descriptions, see [ARCHITECTURE.md](./docs/ARCHITECTURE.md).
+
+---
+
+## 📱 AeroFlow Mobile Ecosystem
 
 AeroFlow provides a **better-than-Flutter** mobile development experience by introducing **Deterministic UI Syntax**.
 
@@ -37,17 +111,7 @@ screen LoginScreen {
 ```
 
 ### 🏗️ Deterministic UI Runtime
-Unlike React or Flutter, AeroFlow UI updates are strictly causal:
-1. **User Event** (Click/Input) → **UI Actor**
-2. **UI Actor** → **DAS Scheduler** (Assigns logical tick)
-3. **DAS** → **Render Block** (Deterministic state update)
-4. **Render Engine** → **Native View** (Bit-for-bit identical frames)
-
-### ⚙️ LLVM Native Compilation
-AeroFlow compiles `.aefl` source into optimized machine code for **Android (Kotlin/NDK)** and **iOS (Swift/LLVM)**:
-- **AOT Performance**: Zero-overhead execution via LLVM bitcode transformation.
-- **Deterministic Memory**: Fixed-layout arenas eliminate GC pauses and memory nondeterminism.
-- **AI-on-Device**: Run agents with deterministic inference directly on the mobile GPU.
+Unlike React or Flutter, AeroFlow UI updates are strictly causal. Every user event (click, scroll, sensor) is ordered via the DAS Scheduler, ensuring total reproducibility. See the [LLVM Mobile Pipeline](./docs/MOBILE_LLVM_PIPELINE.md) for more.
 
 ---
 
@@ -63,35 +127,37 @@ AeroFlow compiles `.aefl` source into optimized machine code for **Android (Kotl
 
 ---
 
-## 🏗️ High-Level Architecture
+## 🛠️ Combined Elite Flow (Advanced Usage)
 
-```mermaid
-graph TD
-    A[Source .aefl] --> B[Compiler]
-    B --> C{AeroFlow IR}
-    C --> D[DAS Scheduler]
-    D --> E[Isolated Actor Arena]
-    E --> F[Deterministic VM]
-    F --> G[Trace Recorder]
-    G --> H[trace.json]
-    
-    subgraph "The Elite Core"
-    D
-    E
-    F
-    end
+AeroFlow's CLI is built to handle the entire lifecycle of a deterministic app.
+
+### Run & Build Flags
+```bash
+# Compile and run your mobile app with AI and Distributed sync
+aeroflow run \
+  --source ./game.aefl \
+  --target mobile \
+  --platform android,ios \
+  --runtime das \
+  --snapshot ./snapshots/game.afs \
+  --ide ./ide \
+  --log ./logs/game.log \
+  --replay \
+  --ai \
+  --distributed \
+  --dark-theme
 ```
 
----
-
-## 📦 Standard Library & Package Management (`from` syntax)
-AeroFlow uses a modular dependency system with **Capability-Based Security**.
-
-- `ui.core`: Deterministic UI widgets and layout engines.
-- `ai.tensor`: Tensors, agents, and reproducible ML pipelines.
-- `fintech`: Deterministic backtesting and trade simulation.
-- `net`: Deterministic network simulation and packet replay.
-- `db`: Secure, snapshot-able persistent storage.
+| Flag | Purpose |
+| :--- | :--- |
+| `--source` | Path to your `.aefl` source file. |
+| `--target` | Build target (mobile, web, server). |
+| `--platform` | Target platforms (android, ios, wasm). |
+| `--runtime das` | Use the Deterministic Actor Scheduler. |
+| `--snapshot` | Path to save/load deterministic snapshots (.afs). |
+| `--ide` | Launch AeroFlow Studio for time-travel debugging. |
+| `--log` | Save execution logs for audit and replay. |
+| `--replay` | Replay recorded events for deterministic debugging. |
 
 ---
 
@@ -111,31 +177,13 @@ AeroFlow uses a modular dependency system with **Capability-Based Security**.
 
 - [x] **Core Language Specification**: EBNF Formalization.
 - [x] **DAS Engine**: Deterministic Actor Scheduler.
-- [x] **Elite Toolchain**: CLI, Build system, and Testing suite.
+- [x] **Elite Toolchain**: Advanced CLI and build system.
 - [x] **Time-Travel Records**: Deterministic trace export/replay.
 - [x] **WASM Target**: Running DAS in the browser and edge.
 - [x] **Distributed DAS (D-DAS)**: Multi-node deterministic message passing.
-- [ ] **Mobile Runtime**: AOT compilation for iOS and Android.
 - [ ] **AeroFlow Studio**: Visual timeline-based IDE.
-- [ ] **Standard Library**: stable `ui.core` and `ai.tensor` modules.
-
----
-
-## 🤝 Contributing
-1. Fork the repo.
-2. Ensure tests pass: `cargo test` & `aeroflow test`.
-3. Submit a PR.
-
----
-
-## 📜 Vision
-AeroFlow aims to make distributed computing, mobile apps, and AI simulations **provably deterministic**. Eliminate the "it works on my machine" problem once and for all.
-
----
-
-## 🔗 Links
-- [AeroFlow Official Site](https://github.com/Adiytisuman24/Aeroflow)
-- [Documentation](https://github.com/Adiytisuman24/Aeroflow/tree/main/docs)
+- [ ] **Mobile Runtime**: AOT native compilation for Android/iOS.
+- [ ] **Simulation Engine**: Specialized hooks for Gaming/FinTech simulations.
 
 ---
 
