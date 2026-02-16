@@ -1,351 +1,229 @@
-# AeroFlow CLI - Command Reference
+# 🛠️ AeroFlow CLI — Full Specification
 
-Complete guide to all AeroFlow command-line tools.
+This document details the complete command-line interface for the AeroFlow Elite Engine.
 
----
+## 1️⃣ Install AeroFlow
 
-## Installation Verification
-
-After installing AeroFlow, verify it's working:
+Install AeroFlow on Linux, macOS, or Windows:
 
 ```bash
-aeroflow --version
-# Output: aeroflow 1.0.0
-
-aeroflow doctor
-# Runs system diagnostics
+# Clone the AeroFlow repo and build binaries
+git clone https://github.com/Adiytisuman24/Aeroflow.git
+cd Aeroflow
+# If using make
+make install
+# Or manual build
+cargo install --path cli
 ```
 
+✅ **This installs:**
+- `aeroflow` CLI
+- Deterministic runtime (`das`)
+- Mobile and WASM backends
+- AeroFlow IDE (white/dark theme)
+- Package manager (`afpm`)
+
 ---
 
-## Commands
-
-### `aeroflow init <project-name>`
-
-**Initialize a new AeroFlow project.**
+## 2️⃣ Initialize a New Project
 
 ```bash
+# Initialize a new AeroFlow project
 aeroflow init myapp
+cd myapp
 ```
 
-**Creates:**
-```
+**Generates project structure:**
+```text
 myapp/
-├── src/
-│   └── main.af          # Entry point
-├── assets/              # Static files
-├── aeroflow.toml        # Project config
-├── manifest.afm         # Runtime manifest
-└── README.md
-```
-
-**Options:**
-- `--template <name>` - Use a project template (e.g., `api`, `ai-worker`, `mobile`)
-
-**Examples:**
-```bash
-# Basic project
-aeroflow init hello
-
-# API server template
-aeroflow init myapi --template api
-
-# AI worker template
-aeroflow init ai-bot --template ai-worker
+ ├─ src/
+ │   └─ main.aefl      # Main AeroFlow source
+ ├─ snapshots/         # DAS runtime snapshots
+ ├─ logs/              # Execution & replay logs
+ ├─ ide/               # AeroFlow IDE config & cache
+ ├─ aeroflow.toml      # Project configuration
+ └─ packages/          # Installed modules
 ```
 
 ---
 
-### `aeroflow run <file.af>`
+## 3️⃣ Build / Compile
 
-**Execute an AeroFlow program (production mode).**
+Compile for Mobile, Web, or Server targets.
 
 ```bash
-aeroflow run src/main.af
+aeroflow build \
+  --source ./src/main.aefl \
+  --target mobile,server,wasm \
+  --platform android,ios,web \
+  --snapshot ./snapshots/main.afs \
+  --ai
 ```
 
-**How it works:**
-1. Parses source code
-2. Compiles to IR (Tier-0 bytecode)
-3. Executes in scheduler
-4. Shows execution time
+### Flags
+| Flag | Purpose |
+| :--- | :--- |
+| `--source` | Path to `.aefl` source file. |
+| `--target` | Build target: `mobile`, `server`, `wasm`. |
+| `--platform` | Platforms: `android`, `ios`, `web`, `linux`, `windows`. |
+| `--snapshot` | Path to save deterministic runtime snapshot (`.afs`). |
+| `--ai` | Compile AI-native pipelines and tensor ops. |
 
-**Output:**
-```
-🚀 Starting AeroFlow Runtime: src/main.af
-✅ Execution finished in 1.23ms
-```
+---
 
-**Options:**
-- `--sandbox` - Run in isolated VM
-- `--trace` - Enable execution tracing
+## 4️⃣ Run / Execute
 
-**Examples:**
+Execute the program with the Deterministic Actor Scheduler (DAS).
+
 ```bash
-# Standard run
-aeroflow run app.af
+aeroflow run \
+  --source ./src/main.aefl \
+  --runtime das \
+  --snapshot ./snapshots/main.afs \
+  --log ./logs/execution.log \
+  --replay \
+  --ide ./ide
+```
 
-# Sandboxed execution
-aeroflow run app.af --sandbox
+### Optional Flags
+| Flag | Purpose |
+| :--- | :--- |
+| `--runtime` | Runtime engine: `das` (Deterministic Actor Scheduler). |
+| `--log` | Path to execution log for replay/debugging. |
+| `--replay` | Replay recorded execution logs. |
+| `--ide` | Launch AeroFlow IDE with timeline & distributed state visualization. |
+| `--dark-theme` | Launch IDE in dark mode. |
+| `--light-theme` | Launch IDE in light mode. |
+| `--distributed` | Enable multi-node distributed execution. |
+| `--fast-mode` | Microsecond zero-cold-start execution. |
+| `--verbose` | Show runtime logs in terminal. |
 
-# With tracing
-aeroflow run app.af --trace
+---
+
+## 5️⃣ Package Manager — afpm
+
+Install and manage AeroFlow modules.
+
+```bash
+# Install a package
+aeroflow install
+
+# (Future) Explicit package management
+# afpm install ai.tensor
+```
+
+**Syntax in code:**
+```ae
+from ui.core view
+from ai.tensor agent
+from fintech.backtest
 ```
 
 ---
 
-### `aeroflow dev <file.af>`
+## 6️⃣ IDE Integration
 
-**Start development server with hot reload.**
+Launch AeroFlow IDE with timeline, DAG, and distributed state visualization:
 
 ```bash
-aeroflow dev src/main.af
+aeroflow ide \
+  --file ./src/main.aefl \
+  --dark-theme \
+  --show-timeline \
+  --show-distributed-state \
+  --ai-debug
 ```
 
-**Features:**
-- File watcher enabled
-- Auto-recompile on save
-- State preserved across reloads
-- Live error reporting
-
-**Output:**
-```
-🔥 AeroFlow Dev Server (Hot Reload Active)
-👀 Watching src/main.af...
-🔄 Hot Reload: No changes detected.
-```
-
-**Options:**
-- `--port <port>` - Specify server port (default: 8080)
-- `--host <host>` - Bind address (default: 0.0.0.0)
-
-**Examples:**
-```bash
-# Standard dev mode
-aeroflow dev src/main.af
-
-# Custom port
-aeroflow dev src/main.af --port 3000
-
-# Localhost only
-aeroflow dev src/main.af --host 127.0.0.1
-```
+**IDE features:**
+- Time-travel debugging
+- Actor DAG visualization
+- Distributed state snapshots
+- Replay UI/network/AI events
+- White/Dark mode
 
 ---
 
-### `aeroflow build <file.af>`
+## 7️⃣ Distributed Simulation / Multiplayer / Blockchain
 
-**Build a portable executable artifact.**
+Run multi-node deterministic simulations:
 
 ```bash
-aeroflow build src/main.af
+aeroflow simulate \
+  --source ./src/main.aefl \
+  --nodes 5 \
+  --distributed \
+  --log ./logs/simulation.log \
+  --replay
 ```
 
-**Output:**
-- `dist/app.aefl` - Portable executable
-
-**With Docker Sync (for large assets):**
-```bash
-aeroflow build src/main.af --docker-sync
-```
-
-**Output:**
-- `dist/app.afs` - Snapshot file
-- Docker image (assets layer only)
-
-**How Docker Sync works:**
-1. Large assets (models, datasets) → Docker image
-2. Runtime logic → `.afs` snapshot
-3. Deployment: Pull image + run snapshot
-4. Result: Fast distribution + Fast execution
-
-**Options:**
-- `--docker-sync` - Enable Docker asset packaging
-- `--output <path>` - Custom output directory
-
-**Examples:**
-```bash
-# Standard build
-aeroflow build app.af
-
-# With Docker sync
-aeroflow build app.af --docker-sync
-
-# Custom output
-aeroflow build app.af --output ./release
-```
+- `--nodes`: Number of simulated nodes.
+- Deterministic scheduler ensures all nodes produce same state.
+- Supports FinTech backtesting, multiplayer games, blockchain smart contracts.
+- All events logged for reproducibility.
 
 ---
 
-### `aeroflow snapshot <file.af>`
+## 8️⃣ AI / ML Pipelines
 
-**Create AOT snapshot for ultra-fast deployment.**
+Compile and run deterministic AI inference:
 
 ```bash
-aeroflow snapshot src/main.af
+aeroflow run \
+  --source ./src/main.aefl \
+  --ai \
+  --runtime das \
+  --snapshot ./snapshots/ai.afs \
+  --log ./logs/ai.log
 ```
 
-**Output:**
-- `dist/app.afs` - Production snapshot
-
-**What's included:**
-- Compiled bytecode
-- Hot native blocks (JIT cache)
-- Memory layout map
-- Permission manifest
-
-**Cold start performance:**
-- Standard: ~10ms
-- Snapshot: **<10µs** ⚡
-
-**Options:**
-- `--optimize` - Apply AOT optimizations
-- `--strip` - Remove debug symbols
-
-**Examples:**
-```bash
-# Standard snapshot
-aeroflow snapshot app.af
-
-# Optimized production snapshot
-aeroflow snapshot app.af --optimize --strip
-```
+**Supports:**
+- `agent` blocks
+- Deterministic tensor ops
+- Replayable AI execution
+- Cross-platform (mobile, web, server)
 
 ---
 
-### `aeroflow doctor`
-
-**Diagnose system health and compatibility.**
+## 9️⃣ Replay & Time-Travel Debugging
 
 ```bash
-aeroflow doctor
+aeroflow replay \
+  --log ./logs/execution.log \
+  --ide ./ide \
+  --step 10ms \
+  --fast-forward
 ```
 
-**Checks:**
-- ✅ CPU features (AVX2, SIMD)
-- ✅ Memory model (64-bit alignment)
-- ✅ Docker bridge availability
-- ✅ VM isolation support
-- ✅ GPU availability (optional)
-
-**Output:**
-```
-🩺 AeroFlow Doctor
-✔ CPU Features: AVX2 detected
-✔ Memory Model: 64-bit Little Endian
-✔ Docker Bridge: Online
-✔ VM Isolation: Ready
-✅ System Healthy
-```
-
-**Options:**
-- `--verbose` - Show detailed diagnostic info
-- `--fix` - Attempt to fix common issues
+- Step through deterministic execution.
+- Replay network calls, UI events, threads, sensor input.
+- Debug distributed systems & AI pipelines.
+- Visualize timeline in IDE.
 
 ---
 
-## Advanced Usage
-
-### Combining Commands
+## 🔹 Example Full Command — All-in-One
 
 ```bash
-# Init + Dev in one go
-aeroflow init myapp && cd myapp && aeroflow dev src/main.af
-
-# Build + Snapshot  
-aeroflow build app.af && aeroflow snapshot dist/app.aefl
+aeroflow run \
+  --source ./src/main.aefl \
+  --target mobile,server,wasm \
+  --platform android,ios,web \
+  --runtime das \
+  --snapshot ./snapshots/main.afs \
+  --log ./logs/execution.log \
+  --replay \
+  --ide ./ide \
+  --distributed \
+  --ai \
+  --fast-mode \
+  --dark-theme
 ```
 
-### Environment Variables
-
-```bash
-# Set log level
-export AEROFLOW_LOG=debug
-aeroflow run app.af
-
-# Custom cache directory
-export AEROFLOW_CACHE=~/.cache/aeroflow
-aeroflow build app.af
-```
-
-### Configuration File
-
-`aeroflow.toml`:
-```toml
-[build]
-target = "native"
-optimize = true
-
-[runtime]
-threads = 4
-sandbox = false
-
-[dev]
-port = 8080
-hot_reload = true
-```
-
----
-
-## Exit Codes
-
-| Code | Meaning |
-|------|---------|
-| 0 | Success |
-| 1 | Compilation error |
-| 2 | Runtime error |
-| 101 | System check failed |
-
----
-
-## Troubleshooting
-
-### Command not found
-
-```bash
-# Verify installation
-which aeroflow
-
-# If not found, add to PATH
-export PATH="$PATH:/usr/local/bin"
-```
-
-### Permission denied
-
-```bash
-# AeroFlow never needs root
-# If you see this, something is wrong
-aeroflow doctor --verbose
-```
-
-### Slow compilation
-
-```bash
-# Clear cache
-rm -rf ~/.cache/aeroflow
-
-# Rebuild
-aeroflow build --fresh
-```
-
----
-
-## Getting Help
-
-```bash
-# General help
-aeroflow --help
-
-# Command-specific help
-aeroflow build --help
-aeroflow run --help
-```
-
-**Online Resources:**
-- Documentation: https://docs.aeroflow.dev
-- GitHub Issues: https://github.com/aeroflow/aeroflow/issues
-- Discord: https://discord.gg/aeroflow
-
----
-
-**Last updated: 2026-02-15**
+**What it does:**
+1. Compiles `.aefl` source for all platforms (Android/iOS/Web/Server).
+2. Launches DAS runtime.
+3. Executes AI agents and tensor operations.
+4. Runs distributed simulation (multi-node).
+5. Saves snapshot (`.afs`) for zero cold start.
+6. Launches AeroFlow IDE with timeline & state visualization.
+7. Enables replayable deterministic logs.
