@@ -61,6 +61,20 @@ pub enum TokenKind {
     #[token("or")]
     Or,
 
+    // Keywords - Mobile / UI
+    #[token("screen")]
+    Screen,
+    #[token("Text")]
+    TextWidget,
+    #[token("Input")]
+    InputWidget,
+    #[token("Button")]
+    ButtonWidget,
+    #[token("bind")]
+    Bind,
+    #[token("onClick")]
+    OnClick,
+
     // Types
     #[token("int")]
     IntType,

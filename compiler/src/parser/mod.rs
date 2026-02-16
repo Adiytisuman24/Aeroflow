@@ -57,6 +57,7 @@ impl<'a> Parser<'a> {
             self.parse_fn(true) 
         }
         else if self.match_token(TokenKind::Actor) { self.parse_actor() }
+        else if self.match_token(TokenKind::Screen) { self.parse_screen() }
         else if self.match_token(TokenKind::Agent) { self.parse_agent() }
         else if self.match_token(TokenKind::Model) { self.parse_model() }
         else if self.match_token(TokenKind::From) { self.parse_from() }
@@ -196,12 +197,59 @@ impl<'a> Parser<'a> {
         } else if self.match_token(TokenKind::Distributed) {
             self.consume(TokenKind::State, "Expect 'state' after 'distributed'");
             crate::ast::RenderExpression::DistributedState(self.parse_distributed_state())
+        } else if self.current == TokenKind::TextWidget || self.current == TokenKind::InputWidget || self.current == TokenKind::ButtonWidget {
+            let mut widgets = Vec::new();
+            while self.current == TokenKind::TextWidget || self.current == TokenKind::InputWidget || self.current == TokenKind::ButtonWidget {
+                widgets.push(self.parse_ui_widget());
+            }
+            crate::ast::RenderExpression::UIWidgets(widgets)
         } else {
             crate::ast::RenderExpression::Expr(self.parse_expression())
         };
 
         self.consume(TokenKind::RBrace, "Expect '}' after render block");
         Stmt::Render(render_expr)
+    }
+
+    fn parse_ui_widget(&mut self) -> crate::ast::UIWidget {
+        if self.match_token(TokenKind::TextWidget) {
+            self.consume(TokenKind::LBrace, "Expect '{' after Text");
+            let expr = self.parse_expression();
+            self.consume(TokenKind::RBrace, "Expect '}' after expression");
+            crate::ast::UIWidget::Text(expr)
+        } else if self.match_token(TokenKind::InputWidget) {
+            self.consume(TokenKind::LBrace, "Expect '{' after Input");
+            self.consume(TokenKind::Bind, "Expect 'bind' in Input");
+            self.consume(TokenKind::Colon, "Expect ':' after bind");
+            self.consume(TokenKind::Ident(String::new()), "Expect variable name");
+            let bind = if let TokenKind::Ident(id) = &self.previous { id.clone() } else { panic!() };
+            self.consume(TokenKind::RBrace, "Expect '}' after Input");
+            crate::ast::UIWidget::Input { bind }
+        } else if self.match_token(TokenKind::ButtonWidget) {
+            self.consume(TokenKind::LBrace, "Expect '{' after Button");
+            self.consume(TokenKind::String(String::new()), "Expect button label");
+            let label = if let TokenKind::String(s) = &self.previous { s.clone() } else { panic!() };
+            self.consume(TokenKind::Comma, "Expect ',' after label");
+            self.consume(TokenKind::OnClick, "Expect 'onClick'");
+            self.consume(TokenKind::Colon, "Expect ':' after onClick");
+            let on_click = self.parse_expression();
+            self.consume(TokenKind::RBrace, "Expect '}' after Button");
+            crate::ast::UIWidget::Button { label, on_click }
+        } else {
+            panic!("Unexpected UI widget token: {:?}", self.current);
+        }
+    }
+
+    fn parse_screen(&mut self) -> Stmt {
+        self.consume(TokenKind::Ident(String::new()), "Expect screen name");
+        let name = if let TokenKind::Ident(n) = &self.previous { n.clone() } else { panic!() };
+        self.consume(TokenKind::LBrace, "Expect '{'");
+        let mut body = Vec::new();
+        while self.current != TokenKind::RBrace {
+            body.push(self.parse_statement());
+        }
+        self.consume(TokenKind::RBrace, "Expect '}'");
+        Stmt::Screen { name, body }
     }
 
     fn parse_timeline(&mut self) -> crate::ast::TimelineBlock {

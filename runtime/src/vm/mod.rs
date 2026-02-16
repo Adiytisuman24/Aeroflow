@@ -177,6 +177,9 @@ impl VM {
                 Instr::RenderState => {
                     println!("🧩 [DAS] EMITTING DETERMINISTIC STATE SNAPSHOT...");
                 }
+                Instr::RenderUI => {
+                    println!("📱 [DAS] DISPATCHING DECLARATIVE UI UPDATE...");
+                }
             }
             ip += 1;
         }

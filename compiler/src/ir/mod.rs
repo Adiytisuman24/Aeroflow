@@ -34,6 +34,7 @@ pub enum Instr {
     Render,              // Context-aware output
     RenderTimeline,      // Emit distributed event graph
     RenderState,         // Emit engine state snapshot
+    RenderUI,            // Dispatch declarative UI update
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]

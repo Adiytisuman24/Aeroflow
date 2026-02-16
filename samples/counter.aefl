@@ -1,21 +1,28 @@
-app AeroFlowDemo {
-  theme dark
-  entry HomeScreen
+from ui.core view
+from ai.tensor agent
+
+screen CounterScreen {
+    let count: int = 0
+    
+    fn increment() {
+        let count = count + 1
+    }
+
+    render {
+        Text {"Current count: " + count}
+        Button {"Press to Increment", onClick: increment()}
+    }
 }
 
-screen HomeScreen {
-  state count: Int = 0
-
-  layout Column(center) {
-    Text("AeroFlow Counter")
-      .font(24)
-      .bold()
-
-    Text(count)
-      .font(20)
-
-    Button("Increment") {
-      count += 1
+agent SmartAssistant {
+    model "llama3"
+    on interaction(query) {
+        render {model.run(query)}
     }
-  }
+}
+
+fn main() {
+    render {
+        CounterScreen {}
+    }
 }

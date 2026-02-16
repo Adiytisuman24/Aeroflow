@@ -45,6 +45,19 @@ pub enum RenderExpression {
     Expr(Expr),
     Timeline(TimelineBlock),
     DistributedState(DistributedStateBlock),
+    UIWidgets(Vec<UIWidget>),
+}
+
+#[derive(Debug, Clone)]
+pub enum UIWidget {
+    Text(Expr),
+    Input {
+        bind: String,
+    },
+    Button {
+        label: String,
+        on_click: Expr,
+    },
 }
 
 #[derive(Debug, Clone)]
@@ -86,6 +99,10 @@ pub enum Stmt {
         body: Vec<Stmt>,
         return_type: Type,
         is_pure: bool,
+    },
+    Screen {
+        name: String,
+        body: Vec<Stmt>,
     },
     Actor {
         name: String,

@@ -24,6 +24,9 @@ impl Codegen {
     fn compile_stmt(&mut self, stmt: Stmt) {
         match stmt {
             Stmt::Fn { .. } => {}
+            Stmt::Screen { body, .. } => {
+                for s in body { self.compile_stmt(s); }
+            }
             Stmt::Actor { .. } => {}
             Stmt::Agent { .. } => {}
             Stmt::Model { .. } => {}
@@ -44,6 +47,20 @@ impl Codegen {
                     }
                     crate::ast::RenderExpression::DistributedState(_) => {
                         self.chunk.emit(Instr::RenderState);
+                    }
+                    crate::ast::RenderExpression::UIWidgets(widgets) => {
+                        for widget in widgets {
+                            match widget {
+                                crate::ast::UIWidget::Text(expr) => {
+                                    self.compile_expr(expr);
+                                }
+                                crate::ast::UIWidget::Input { .. } => {} // Bindings handled by runtime
+                                crate::ast::UIWidget::Button { on_click, .. } => {
+                                    self.compile_expr(on_click);
+                                }
+                            }
+                        }
+                        self.chunk.emit(Instr::RenderUI);
                     }
                 }
             }
