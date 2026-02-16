@@ -188,12 +188,239 @@ aeroflow run \
 ---
 
 ## � Links
-- [AeroFlow Official Site](https://github.com/Adiytisuman24/Aeroflow)
-- [Documentation](https://github.com/Adiytisuman24/Aeroflow/tree/main/docs)
-- [CLI Reference](./docs/CLI_REFERENCE.md)
-- [Getting Started Guide](./docs/GETTING_STARTED.md)
+AeroFlow — Official Developer README
+📌 Overview
+
+AeroFlow is a deterministic, AI-native, distributed programming language and runtime for mobile, web, server, gaming, FinTech, and blockchain applications.
+
+Key Features:
+
+Deterministic execution across all platforms
+
+Mobile syntax better than Flutter
+
+AI-native runtime with agents & tensors
+
+Multi-node distributed simulation & timeline replay
+
+Zero cold start execution with DAS runtime
+
+IDE with timeline, distributed state, DAG visualization
+
+Package manager (afpm) for modules
+
+LLVM-based compilation for Android/iOS/WASM
+
+⚡ Installation
+# Clone the AeroFlow repository
+git clone https://registry.aeroflow.dev/aeroflow.git
+cd aeroflow
+
+# Build and install binaries
+make install
+
+✅ Installs:
+
+aeroflow CLI
+
+DAS runtime (das)
+
+Mobile & WASM backends
+
+AeroFlow IDE (white & dark themes)
+
+Package manager (afpm)
+
+🆕 Create a New Project
+# Initialize a new project
+aeroflow init myapp
+cd myapp
+
+Project structure:
+
+myapp/
+ ├─ src/                 # AeroFlow source files (.aefl)
+ ├─ snapshots/           # DAS runtime snapshots
+ ├─ logs/                # Execution & replay logs
+ ├─ ide/                 # IDE config & cache
+ ├─ aeroflow.toml        # Project config
+ └─ packages/            # Installed modules
+🛠️ CLI Commands
+Build / Compile
+aeroflow build \
+  --source ./src/main.aefl \
+  --target mobile,server,wasm \
+  --platform android,ios,web \
+  --snapshot ./snapshots/main.afs \
+  --ai
+
+--target = mobile / server / wasm
+
+--platform = android / ios / web / linux / windows
+
+--snapshot = deterministic snapshot
+
+--ai = compile AI-native pipelines
+
+Run / Execute
+aeroflow run \
+  --source ./src/main.aefl \
+  --runtime das \
+  --snapshot ./snapshots/main.afs \
+  --log ./logs/execution.log \
+  --replay \
+  --ide ./ide
+
+Optional flags:
+
+Flag	Purpose
+--distributed	Multi-node deterministic execution
+--fast-mode	Microsecond zero-cold-start
+--dark-theme	Launch IDE in dark mode
+--light-theme	Launch IDE in light mode
+--verbose	Show runtime logs
+Package Manager (afpm)
+# Install a module
+afpm install ai.tensor
+
+# Install multiple modules
+afpm install ui.core net fintech blockchain
+
+# List installed modules
+afpm list
+
+# Update a module
+afpm update ai.tensor
+
+# Remove a module
+afpm remove ui.core
+
+Use in code:
+
+from ui.core
+from ai.tensor
+from fintech.backtest
+IDE Integration
+aeroflow ide ./src/main.aefl \
+  --dark-theme \
+  --show-timeline \
+  --show-distributed-state \
+  --ai-debug
+
+IDE Features:
+
+Timeline view & distributed state visualization
+
+Actor DAG visualization
+
+Snapshot explorer & time-travel debugging
+
+Light / Dark themes
+
+Distributed Simulation / Multiplayer / Blockchain
+aeroflow simulate \
+  --source ./src/main.aefl \
+  --nodes 5 \
+  --distributed \
+  --log ./logs/simulation.log \
+  --replay
+
+Deterministic execution across nodes
+
+Multiplayer games, FinTech backtesting, blockchain simulations
+
+Replayable event logs
+
+AI / ML Pipelines
+agent Recommender {
+    model "llama3"
+    on predict(input) {
+        render {model.run(input)}
+    }
+}
+# Run AI pipelines deterministically
+aeroflow run --source ./src/main.aefl --ai --runtime das
+
+Supports deterministic training & inference
+
+Multi-platform execution: mobile, web, server
+
+Replay & Time-Travel Debugging
+aeroflow replay \
+  --log ./logs/execution.log \
+  --ide ./ide \
+  --step 10ms \
+  --fast-forward
+
+Step through execution
+
+Replay UI events, network calls, threads, sensor input
+
+Visualize timeline in IDE
+
+🖌️ Mobile Syntax Examples
+Screen & Render Blocks
+screen LoginScreen {
+    render {
+        Text {"Enter Name:"}
+        Input {bind: userName}
+        Button {"Login", onClick: Auth.login(userName)}
+    }
+}
+Timeline & Distributed State
+render timeline {
+    node A -> B at 10ms payload "login event"
+}
+
+render distributed state {
+    nodeA.counter
+    nodeB.counter
+}
+AI Agent
+agent Recommender {
+    model "llama3"
+    on predict(input) {
+        render {model.run(input)}
+    }
+}
+🔹 Example Full Command
+aeroflow run \
+  --source ./src/main.aefl \
+  --target mobile,server,wasm \
+  --platform android,ios,web \
+  --runtime das \
+  --snapshot ./snapshots/main.afs \
+  --log ./logs/execution.log \
+  --replay \
+  --ide ./ide \
+  --distributed \
+  --ai \
+  --fast-mode \
+  --dark-theme
+
+✅ This command compiles, executes, and visualizes your app with:
+
+Deterministic mobile runtime
+
+Multi-node distributed simulation
+
+AI-native execution
+
+Replayable timelines & distributed state
+
+🔹 Project Roadmap
+
+v0.1 → Core compiler & DAS runtime
+
+v0.2 → Mobile syntax & LLVM backend
+
+v0.3 → AI-native agents & deterministic tensors
+
+v0.4 → Distributed simulation, multiplayer & blockchain support
+
+v1.0 → IDE visualization, package manager, WASM & server runtime
 
 ---
 
 ## �📜 License
-Created with ❤️ by the AeroFlow team. Licensed under the **Apache License 2.0**.
+Created with ❤️ by the Adiyti suman. Licensed under the **Apache License 2.0**.
